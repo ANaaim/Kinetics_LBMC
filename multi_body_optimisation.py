@@ -6,7 +6,7 @@ Created on 18/10/2019
 """
 import numpy as np
 
-
+#test
 def multi_body_optimisation(full_segment, full_model):
 
     nb_frame = full_segment[0].u.shape[1]
