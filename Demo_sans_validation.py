@@ -13,8 +13,8 @@ import points_treatment_validation_QUT
 from Segment import Segment as Segment
 from norm_vector import norm_vector as norm_vector
 
-from multi_body_optimisation import multi_body_optimisation as multi_body_optimisation
-import joint_model
+#from multi_body_optimisation import multi_body_optimisation as multi_body_optimisation
+#import joint_model
 # ---Extraction en utilisant EzC3D---
 filename = os.path.join('.', 'data', 'data_QUT.c3d')
 
@@ -186,14 +186,14 @@ phi_plat = transport_plat * (HomogeneousMatrix.fromHomo(phi_plat)*transport_plat
 # ==============================================================================
 full_segment = [segment_foot, segment_tibia, segment_thigh, segment_pelvis]
 
-ankle_model = joint_model.universal_model(segment_foot, segment_tibia, 'u', 'w')
-knee_model = joint_model.hinge_model(segment_tibia, segment_thigh)
-hip_model = joint_model.spherical_model(segment_thigh, segment_pelvis,
-                                        segment_thigh.rp, segment_thigh.rp)
+#ankle_model = joint_model.universal_model(segment_foot, segment_tibia, 'u', 'w')
+#knee_model = joint_model.hinge_model(segment_tibia, segment_thigh)
+#hip_model = joint_model.spherical_model(segment_thigh, segment_pelvis,
+                                        #segment_thigh.rp, segment_thigh.rp)
 
-full_model = [ankle_model, knee_model, hip_model]
+#full_model = [ankle_model, knee_model, hip_model]
 
-multi_body_optimisation(full_segment, full_model)
+#multi_body_optimisation(full_segment, full_model)
 # poids deja appliqué a mettre en commentaire quelque part
 # ==============================================================================
 # Inverse Dynamics

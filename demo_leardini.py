@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from multi_body_optimisation import multi_body_optimisation as multi_body_optimisation
 import pdb
 from KinematicChain import KinematicChain as KinematicChain
 from HomogeneousMatrix import HomogeneousMatrix as HomogeneousMatrix
@@ -8,7 +7,6 @@ from matplotlib import pyplot as plt
 import points_treatment
 import points_treatment_validation_QUT
 from Segment import Segment as Segment
-import joint_model
 from norm_vector import norm_vector as norm_vector
 import numpy as np
 import os
