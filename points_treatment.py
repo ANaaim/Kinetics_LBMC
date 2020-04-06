@@ -30,8 +30,13 @@ def points_treatment(acq, fc_marker,unit_point='mm',vector_equivalent=[0,2,1],ve
         print('unit_point in point_treatment is not supported')
     
     points[0] = vector_sign[0]*points_temp[vector_equivalent[0]]/unit_conv
+<<<<<<< HEAD
     points[1] = vector_sign[1]*points_temp[vector_equivalent[1]]/unit_conv
     points[2] = vector_sign[2]*points_temp[vector_equivalent[2]]/unit_conv
+=======
+    points[1] = vector_sign[0]*points_temp[vector_equivalent[1]]/unit_conv
+    points[2] = vector_sign[0]*points_temp[vector_equivalent[1]]/unit_conv
+>>>>>>> b1862e301c302c0b7c15b24493db5336cad4a812
 
     nb_frame = points.shape[2]
     frq_acq = acq['parameters']['POINT']['RATE']['value'][0]
