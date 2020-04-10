@@ -21,16 +21,16 @@ class Segment:
 
         self.segment_name = segment_name
         # Q vector parameters
-        self.u = u
-        self.rp = rp
-        self.rd = rd
-        self.w = w
+        self.u = np.copy(u)
+        self.rp = np.copy(rp)
+        self.rd = np.copy(rd)
+        self.w = np.copy(w)
 
         Q = np.zeros((12, u.shape[1]))
-        Q[0:3] = u
-        Q[3:6] = rp
-        Q[6:9] = rd
-        Q[9:12] = w
+        Q[0:3] = np.copy(u)
+        Q[3:6] = np.copy(rp)
+        Q[6:9] = np.copy(rd)
+        Q[9:12] = np.copy(w)
         self.Q = Q
         # Frame number (second dimension of the vector u/rp/rd/w)
         nb_frame = u.shape[1]
@@ -93,7 +93,8 @@ class Segment:
         # We add a dimension do be sure that tile multiply the matrix on the 3rd
         # dimension
         Js_temp = Js_temp[:, :, np.newaxis]
-        self.Js = HomogeneousMatrix.fromHomo(np.tile(Js_temp, (1, 1, u.shape[1])))
+        self.Js = HomogeneousMatrix.fromHomo(
+            np.tile(Js_temp, (1, 1, u.shape[1])))
 
         if nm_list is not None:
             print('marker_from_static')
@@ -146,7 +147,8 @@ class Segment:
     def get_Km(self):
         Km = np.zeros((3*len(self.nm_list), 12, 1))
         for ind_rm in range(0, len(self.nm_list)):
-            Km[3*ind_rm:(ind_rm+1)*3, :, :] = -self.nm_list[ind_rm].T[:, :, np.newaxis]
+            Km[3*ind_rm:(ind_rm+1)*3, :, :] = - \
+                self.nm_list[ind_rm].T[:, :, np.newaxis]
         return Km
     # get_Km
 
@@ -217,7 +219,8 @@ def Q2Buv(alpha, beta, gamma, length):
     btemp12 = ((np.cos(alpha)-np.cos(beta)*np.cos(gamma))/np.sin(gamma))
     B[1, 2, :] = btemp12
     b22temp = np.sqrt(1 - (np.cos(beta))**2
-                      - ((np.cos(alpha) - np.cos(beta)*np.cos(gamma)) / np.sin(gamma))**2
+                      - ((np.cos(alpha) - np.cos(beta) *
+                          np.cos(gamma)) / np.sin(gamma))**2
                       )
     B[2, 2, :] = b22temp
 
@@ -248,7 +251,8 @@ def Q2Bwu(alpha, beta, gamma, length):
     b01temp = length*(np.cos(gamma)-np.cos(alpha)*np.cos(beta))/np.sin(beta)
     B[0, 1, :] = b01temp
     b11temp = length*np.sqrt(np.ones(nb_frame)-np.cos(alpha)**2 -
-                             ((np.cos(gamma)-np.cos(alpha)*np.cos(beta))/np.sin(beta))**2
+                             ((np.cos(gamma)-np.cos(alpha) *
+                               np.cos(beta))/np.sin(beta))**2
                              )
     B[1, 1, :] = b11temp
     B[2, 0, :] = (np.cos(beta))
