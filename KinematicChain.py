@@ -3,7 +3,7 @@ import r2mobile
 from homogenous2rotation import homogenous2rotation as homogenous2rotation
 from Joint import Joint as Joint
 import numpy as np
-import r2mobile
+
 
 class KinematicChain:
 
@@ -11,11 +11,13 @@ class KinematicChain:
                  name_joint, name_rotation,
                  pos_moment_calculation, frame_moment_calculation,
                  moment_projection='JCS'):
-        
+
         dictionnary_rotation = {'zyx': r2mobile.zyx,
-                                'zxy':r2mobile.zxy,
-                                'xzy':r2mobile.xzy}
-        
+                                'zxy': r2mobile.zxy,
+                                'xzy': r2mobile.xzy,
+                                'yxy': r2mobile.yxy,
+                                'yxz': r2mobile.yxz}
+
         # Initialisation phi_joints, force and moment
         phi_joints = dict()
         force = dict()

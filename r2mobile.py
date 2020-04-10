@@ -7,6 +7,35 @@ Created on Fri Feb 22 10:09:18 2019
 import numpy as np
 
 
+def yxz(rotation_matrix):
+    """
+    Computation of Euler angles from a rotation matrix (with YXZ mobile sequences)
+    Tait bryan angles from : https://en.wikipedia.org/wiki/Euler_angles
+    """
+    rot_y = np.arctan2(rotation_matrix[0, 2, :],
+                       rotation_matrix[2, 2, :])
+    rot_x = np.arcsin(-rotation_matrix[1, 2, :])
+    rot_z = np.arctan2(rotation_matrix[1, 0, :],
+                       rotation_matrix[1, 1, :])
+
+    return np.array([rot_z, rot_y, rot_x])
+
+
+def yxy(rotation_matrix):
+    """
+    Computation of Euler angles from a rotation matrix (with YXY mobile sequences)
+    proper euler angles : https://en.wikipedia.org/wiki/Euler_angles
+    """
+    rot_y1 = np.arctan2(rotation_matrix[0, 1, :],
+                        rotation_matrix[2, 1, :])
+
+    rot_x1 = np.arccos(rotation_matrix[1, 1, :])
+
+    rot_y2 = np.arctan2(rotation_matrix[1, 0, :],
+                        -rotation_matrix[1, 2, :])
+    return np.array([rot_y1, rot_x1, rot_y2])
+
+
 def zyx(rotation_matrix):
     """Computation of Euler angles from rotation matrix (with ZYX mobile
     sequence for joint kinematics)
