@@ -7,7 +7,7 @@ from HomogeneousMatrix import HomogeneousMatrix as HomogeneousMatrix
 import r2mobile
 from matplotlib import pyplot as plt
 import points_treatment
-import points_treatment_validation_QUT
+
 from Segment import Segment as Segment
 import joint_model
 from norm_vector import norm_vector as norm_vector
@@ -46,8 +46,10 @@ points_names_dynamic = acq_dynamic['parameters']['POINT']['LABELS']['value']
 #points_static = points_treatment_validation_QUT.points_treatment_validation_foot(acq_static)
 #points_dynamic = points_treatment_validation_QUT.points_treatment_validation_foot(acq_dynamic)
 
-points_static = points_treatment.points_treatment(acq_static,10,unit_point='m')
-points_dynamic = points_treatment.points_treatment(acq_dynamic,10,unit_point='m')
+points_static = points_treatment.points_treatment(
+    acq_static, 10, unit_point='m')
+points_dynamic = points_treatment.points_treatment(
+    acq_dynamic, 10, unit_point='m')
 
 [segment_foot_static, segment_tibia_static, segment_thigh_static,
     segment_pelvis_static] = leardini_simplified(points_static, points_names_static)
@@ -71,8 +73,8 @@ segment_pelvis_final = Segment.fromSegment(
     segment_pelvis_dynamic, segment_static=segment_pelvis_static)
 
 
-full_segment = [segment_foot_dynamic, segment_tibia_dynamic,
-                segment_thigh_dynamic, segment_pelvis_dynamic]
+full_segment = [segment_foot_final, segment_tibia_final,
+                segment_thigh_final, segment_pelvis_final]
 copy_full_segment = [segment_foot_dynamic2, segment_tibia_dynamic2,
                      segment_thigh_dynamic2, segment_pelvis_dynamic2]
 full_segment_hip = [segment_thigh_dynamic, segment_pelvis_dynamic]
@@ -81,25 +83,28 @@ full_segment_ankle = [segment_foot_dynamic, segment_tibia_dynamic]
 full_segment_test = [segment_foot_dynamic, segment_tibia_dynamic,
                      segment_pelvis_dynamic]  # , segment_thigh_dynamic]
 
-model_from_static = False
+model_from_static = True
 if model_from_static:
-    ankle_model = joint_model.universal_model(segment_foot_static, segment_tibia_static, 'u', 'w')
+    ankle_model = joint_model.universal_model(
+        segment_foot_static, segment_tibia_static, 'u', 'w')
     #ankle_model = joint_model.hinge_model(segment_foot_static, segment_tibia_static)
-    knee_model = joint_model.hinge_model(segment_tibia_static, segment_thigh_static)
+    knee_model = joint_model.hinge_model(
+        segment_tibia_static, segment_thigh_static)
     hip_model = joint_model.spherical_model(segment_thigh_static, segment_pelvis_static,
                                             segment_thigh_static.rp, segment_thigh_static.rp)
 else:
     ankle_model = joint_model.spherical_model(segment_foot_dynamic, segment_tibia_dynamic,
-                                              segment_foot_dynamic.rp,segment_tibia_dynamic.rd)
+                                              segment_foot_dynamic.rp, segment_tibia_dynamic.rd)
     knee_model = joint_model.spherical_model(segment_tibia_dynamic, segment_thigh_dynamic,
-                                             segment_tibia_dynamic.rp,segment_thigh_dynamic.rd)
+                                             segment_tibia_dynamic.rp, segment_thigh_dynamic.rd)
     hip_model = joint_model.spherical_model(segment_thigh_dynamic, segment_pelvis_dynamic,
                                             segment_thigh_dynamic.rp, segment_thigh_dynamic.rp)
-import pdb; pdb.set_trace()
+pdb.set_trace()
 
 full_model = [ankle_model, knee_model, hip_model]
-full_model_test = [joint_model.no_model(), joint_model.no_model(),joint_model.no_model()]
-multi_body_optimisation(full_segment, full_model_test)
+full_model_test = [joint_model.no_model(), joint_model.no_model(),
+                   joint_model.no_model()]
+multi_body_optimisation(full_segment, full_model)
 
 full_model_hip = [hip_model]
 full_model_knee = [knee_model]
@@ -115,7 +120,8 @@ full_model_test = [joint_model.no_model(), joint_model.no_model()]
 #multi_body_optimisation(full_segment, full_model)
 #multi_body_optimisation(copy_full_segment, full_model)
 
-phi_zeros = HomogeneousMatrix.fromHomo(np.zeros((4, 4, full_segment[0].u.shape[1])))
+phi_zeros = HomogeneousMatrix.fromHomo(
+    np.zeros((4, 4, full_segment[0].u.shape[1])))
 # full_segment = [segment_foot, segment_tibia, segment_thigh, segment_pelvis]
 # phi_ext express at the origin
 phi_ext = [phi_zeros, phi_zeros, phi_zeros, phi_zeros]
@@ -212,4 +218,55 @@ plt.plot(test_multiseg_no_optim.euler_rel['Ankle'][2, :], label='No_Optim')
 plt.title('Ankle')
 plt.show()
 
-import pdb; pdb.set_trace()
+
+# copy des infos pour les points
+new_list = points_names_dynamic.copy()
+new_array = acq_dynamic['data']['points'].copy()*1000
+nb_frame = acq_dynamic['data']['points'].shape[2]
+
+for segment in full_segment:
+    name_segment = segment.segment_name
+    for ind_rm in range(len(segment.nm_list)):
+        name_marker = name_segment + str(ind_rm)
+        print(name_marker)
+
+        new_list.append(name_marker)
+        new_point = np.zeros((4, 1, nb_frame))
+
+        temp = np.dot(
+            segment.nm_list[ind_rm].T, segment.Q)*1000
+        new_point[0, 0, :] = temp[0, :]
+        new_point[1, 0, :] = -temp[2, :]
+        new_point[2, 0, :] = temp[1, :]
+        new_point[3, 0, :] = 1
+
+        print('tata')
+        new_array = np.append(new_array, new_point, axis=1)
+    list_point_to_add = [segment.rp+0.1*segment.u,
+                         segment.rp, segment.rd, segment.rd+0.1*segment.w]
+    list_name = ['u', 'rp', 'rd', 'w']
+    for ind_point, point in enumerate(list_point_to_add):
+        name_point = list_name[ind_point] + '_'+name_segment
+        print(name_point)
+        new_list.append(name_point)
+        new_point = np.zeros((4, 1, nb_frame))
+        temp = point * 1000
+        new_point[0, 0, :] = temp[0, :]
+        new_point[1, 0, :] = -temp[2, :]
+        new_point[2, 0, :] = temp[1, :]
+        new_point[3, 0, :] = 1
+
+        new_array = np.append(new_array, new_point, axis=1)
+
+# acq_dynamic['data']['points'] = new_array
+# acq_dynamic['parameters']['POINT']['LABELS']['value'] = new_list
+
+
+c3d = ezc3d.c3d()
+
+# Fill it with random data
+c3d['parameters']['POINT']['RATE']['value'] = [nb_frame]
+c3d['parameters']['POINT']['LABELS']['value'] = new_list
+c3d['data']['points'] = new_array
+
+c3d.write('test_ezc3cd.c3d')
