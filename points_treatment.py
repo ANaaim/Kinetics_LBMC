@@ -8,7 +8,7 @@ import numpy as np
 from scipy import signal, interpolate
 
 
-def points_treatment(acq, fc_marker,unit_point='mm',vector_equivalent=[0,2,1],vector_sign=[1,1,-1]):
+def points_treatment(acq, fc_marker, unit_point='mm', vector_equivalent=[0, 2, 1], vector_sign=[1, 1, -1]):
     # acq = acqusition file in ezc3d
     # fc = cutoff frequency
     # unit_point unit in which the point are given
@@ -16,27 +16,22 @@ def points_treatment(acq, fc_marker,unit_point='mm',vector_equivalent=[0,2,1],ve
     # vector_sign = the new sign of the vector
     # Example in ISB Y is pointing upward and in typical c3d file the Z is pointing upward as a result
     # XYZ (0 1 2) become XZ-Y (0 2 -1) which result in vector_equivalent=[0,2,1] and vector_sign=[1,1,-1]
-    # By default it is the transition from normal c3d file to ISB 
+    # By default it is the transition from normal c3d file to ISB
 
     points_temp = acq['data']['points'][0:3, :, :]
     points = np.zeros_like(points_temp)
 
     # Respect ISB convention
-    if unit_point =='mm':
+    if unit_point == 'mm':
         unit_conv = 1000
     elif unit_point == 'm':
         unit_conv = 1
     else:
         print('unit_point in point_treatment is not supported')
-    
+
     points[0] = vector_sign[0]*points_temp[vector_equivalent[0]]/unit_conv
-<<<<<<< HEAD
     points[1] = vector_sign[1]*points_temp[vector_equivalent[1]]/unit_conv
     points[2] = vector_sign[2]*points_temp[vector_equivalent[2]]/unit_conv
-=======
-    points[1] = vector_sign[0]*points_temp[vector_equivalent[1]]/unit_conv
-    points[2] = vector_sign[0]*points_temp[vector_equivalent[1]]/unit_conv
->>>>>>> b1862e301c302c0b7c15b24493db5336cad4a812
 
     nb_frame = points.shape[2]
     frq_acq = acq['parameters']['POINT']['RATE']['value'][0]
