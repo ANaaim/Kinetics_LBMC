@@ -22,7 +22,8 @@ class spherical_model:
 
         nv_temp_proximal = np.mean(vnop_array(point_proximal-segment_proximal.rp,
                                               segment_proximal.u,
-                                              (segment_proximal.rp-segment_proximal.rd),
+                                              (segment_proximal.rp -
+                                               segment_proximal.rd),
                                               segment_proximal.w), axis=1)
 
         nVdistal[0:3, :] = nv_temp_distal[0]*np.eye(3)
@@ -65,19 +66,22 @@ class universal_model:
         if axe_distal == 'u':
             axe_dist_calc = segment_distal.u
         elif axe_distal == 'v':
-            axe_dist_calc = (segment_distal.rp - segment_distal.rd)/segment_distal.length
+            axe_dist_calc = (segment_distal.rp -
+                             segment_distal.rd)/segment_distal.length_mean
         elif axe_distal == 'w':
             axe_dist_calc = axe_distal.w
 
         if axe_proximal == 'u':
             axe_prox_calc = segment_proximal.u
         elif axe_proximal == 'v':
-            axe_prox_calc = (segment_proximal.rp - segment_proximal.rd)/segment_proximal.length
+            axe_prox_calc = (segment_proximal.rp -
+                             segment_proximal.rd)/segment_proximal.length_mean
         elif axe_proximal == 'w':
             axe_prox_calc = segment_proximal.w
 
         if theta_1 is None:
-            self.theta_1 = np.mean(np.arccos(np.sum(axe_prox_calc*axe_dist_calc, axis=0)))
+            self.theta_1 = np.mean(
+                np.arccos(np.sum(axe_prox_calc*axe_dist_calc, axis=0)))
         else:
             self.theta_1 = theta_1
 
@@ -96,7 +100,7 @@ class universal_model:
             axe_dist_calc = segment_distal.u
         elif self.axe_distal == 'v':
             axe_dist_calc = (segment_distal.rp - segment_distal.rd)
-            coeff *= segment_distal.length
+            coeff *= segment_distal.length_mean
         elif self.axe_distal == 'w':
             axe_dist_calc = segment_distal.w
 
@@ -104,11 +108,12 @@ class universal_model:
             axe_prox_calc = segment_proximal.u
         elif self.axe_proximal == 'v':
             axe_prox_calc = (segment_proximal.rp - segment_proximal.rd)
-            coeff *= segment_proximal.length
+            coeff *= segment_proximal.length_mean
         elif self.axe_proximal == 'w':
             axe_prox_calc = segment_proximal.w
 
-        phik[3, :] = np.sum(axe_dist_calc*(axe_prox_calc), 0) - np.cos(self.theta_1)*coeff
+        phik[3, :] = np.sum(axe_dist_calc*(axe_prox_calc),
+                            0) - np.cos(self.theta_1)*coeff
 
         return phik
 
@@ -122,7 +127,7 @@ class universal_model:
         elif self.axe_distal == 'v':
             axe_dist_calc = (segment_distal.rp - segment_distal.rd)
         elif self.axe_distal == 'w':
-            axe_dist_calc = axe_distal.w
+            axe_dist_calc = segment_distal.w
 
         if self.axe_proximal == 'u':
             axe_prox_calc = segment_proximal.u
@@ -189,8 +194,9 @@ class hinge_model:
 
         if theta_1 is None:
             self.theta_1 = np.mean(np.arccos(
-                np.sum(segment_proximal.w*(segment_distal.rp-segment_distal.rd), axis=0)
-                / segment_distal.length))
+                np.sum(segment_proximal.w *
+                       (segment_distal.rp-segment_distal.rd), axis=0)
+                / segment_distal.length_mean))
         else:
             self.theta_1 = theta_1
         if theta_2 is None:
@@ -205,7 +211,7 @@ class hinge_model:
         phik = np.zeros((5, segment_proximal.u.shape[1]))
         phik[0:3, :] = (segment_proximal.rd-segment_distal.rp)
         phik[3, :] = np.sum(segment_proximal.w*(segment_distal.rp-segment_distal.rd),
-                            0) - segment_distal.length*np.cos(self.theta_1)
+                            0) - segment_distal.length_mean*np.cos(self.theta_1)
         phik[4, :] = np.sum(segment_proximal.w*(segment_distal.u), 0)
         - np.cos(self.theta_2)
 

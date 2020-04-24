@@ -37,12 +37,20 @@ class KinematicChain:
         # calcul du mouvement relatif
         homo_segment_rel = dict()
         euler_rel = dict()
+        homo_segment_rel_frame = dict()
+        euler_rel_frame = dict()
 
         for i in range(len(name_joint)):
             homo_segment_rel[name_joint[i]] = homogenous2rotation(
                 list_segment[i+1].Tdist, list_segment[i].Tprox)
             euler_rel[name_joint[i]] = np.rad2deg(
                 dictionnary_rotation[name_rotation[i]](homo_segment_rel[name_joint[i]].T_homo))
+        for i in range(len(name_joint)):
+            homo_segment_rel_frame[name_joint[i]] = homogenous2rotation(
+                list_segment[i+1].Tprox * list_segment[i+1].corr_prox,
+                list_segment[i].Tprox * list_segment[i].corr_prox)
+            euler_rel_frame[name_joint[i]] = np.rad2deg(
+                dictionnary_rotation[name_rotation[i]](homo_segment_rel_frame[name_joint[i]].T_homo))
 
         # Calcul kinetic
         for ind_joint in range(len(name_joint)):
@@ -68,5 +76,6 @@ class KinematicChain:
 
         self.euler_glob = euler_glob
         self.euler_rel = euler_rel
+        self.euler_rel_frame = euler_rel_frame
         self.moment = moment
         self.force = force

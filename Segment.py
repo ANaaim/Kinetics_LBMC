@@ -17,8 +17,7 @@ class Segment:
                  Btype_prox, Btype_dist,
                  segment_name, sexe='M', weight=0,
                  segment_static=None, rigid_parameter=False, inertia='dumas',
-                 nm_list=None):
-
+                 nm_list=None, frame_prox = None):
         self.segment_name = segment_name
         # Q vector parameters
         self.u = np.copy(u)
@@ -37,18 +36,22 @@ class Segment:
 
         # Point associated to the segment
         self.rm = rm
+        # Faire different lenght, alpha et beta....
+        # Les valeurs uniques sont pour les optimisations
+        # Les valeurs calculer pour le segment dans son état est pour la cinématique
 
         # TODO : Create a constructor where these parameters are given
+        self.length = np.sqrt(np.sum((rp - rd)**2, axis=0))
+        self.alpha = np.arccos(np.sum((rp - rd)*w, axis=0)/self.length)
+        self.beta = np.arccos(np.sum(u*w, axis=0))
+        self.gamma = np.arccos(np.sum(u*(rp-rd), axis=0)/self.length)
+
         if segment_static is None:
-            self.length = np.sqrt(np.sum((rp - rd)**2, axis=0))
-            self.alpha = np.arccos(np.sum((rp - rd)*w, axis=0)/self.length)
-            self.beta = np.arccos(np.sum(u*w, axis=0))
-            self.gamma = np.arccos(np.sum(u*(rp-rd), axis=0)/self.length)
             if rigid_parameter:
-                self.length = np.mean(self.length)*np.ones(nb_frame)
-                self.alpha = np.mean(self.alpha)*np.ones(nb_frame)
-                self.beta = np.mean(self.beta)*np.ones(nb_frame)
-                self.gamma = np.mean(self.gamma)*np.ones(nb_frame)
+                self.length_mean = np.mean(self.length)*np.ones(nb_frame)
+                self.alpha_mean = np.mean(self.alpha)*np.ones(nb_frame)
+                self.beta_mean = np.mean(self.beta)*np.ones(nb_frame)
+                self.gamma_mean = np.mean(self.gamma)*np.ones(nb_frame)
 
             nm_list = list()
             for ind_rm in range(0, len(rm)):
@@ -67,10 +70,14 @@ class Segment:
             self.nm_list = nm_list
         else:
             # if the parameter are given it is already rigid
-            self.length = np.mean(segment_static.length) * np.ones(nb_frame)
-            self.alpha = np.mean(segment_static.alpha) * np.ones(nb_frame)
-            self.beta = np.mean(segment_static.beta) * np.ones(nb_frame)
-            self.gamma = np.mean(segment_static.gamma) * np.ones(nb_frame)
+            self.length_mean = np.mean(
+                segment_static.length_mean) * np.ones(nb_frame)
+            self.alpha_mean = np.mean(
+                segment_static.alpha_mean) * np.ones(nb_frame)
+            self.beta_mean = np.mean(
+                segment_static.beta_mean) * np.ones(nb_frame)
+            self.gamma_mean = np.mean(
+                segment_static.gamma_mean) * np.ones(nb_frame)
 
             self.nm_list = segment_static.nm_list
 
@@ -78,6 +85,31 @@ class Segment:
         self.Btype_dist = Btype_dist
         self.Tprox = Q2T(self, Btype_prox, 'rp')
         self.Tdist = Q2T(self, Btype_dist, 'rd')
+
+        if segment_static is None:
+            if frame_prox is None:
+                # Matrix allowing to go from the Tprox to the desired frame
+                nb_frame = self.u.shape[1]
+                X_eye = np.tile(np.array([1, 0, 0, 0])[
+                                :, np.newaxis], (1, nb_frame))
+                Y_eye = np.tile(np.array([0, 1, 0, 0])[
+                                :, np.newaxis], (1, nb_frame))
+                Z_eye = np.tile(np.array([0, 0, 1, 0])[
+                                :, np.newaxis], (1, nb_frame))
+                Or_eye = np.tile(np.array([0, 0, 0, 1])[
+                                 :, np.newaxis], (1, nb_frame))
+                self.corr_prox = HomogeneousMatrix(X_eye, Y_eye, Z_eye, Or_eye)
+            else:
+                
+                corr_temp = self.Tprox.inv() * frame_prox
+                corr_temp_mean = np.mean(corr_temp.T_homo, axis=2)
+                self.corr_prox = HomogeneousMatrix.fromHomo(
+                    np.repeat((corr_temp_mean[:, :, np.newaxis]), self.u.shape[1], axis=2))
+        else:
+            corr_temp_mean = np.mean(
+                segment_static.corr_prox.T_homo, axis=2)
+            self.corr_prox = HomogeneousMatrix.fromHomo(np.repeat(
+                (corr_temp_mean[:, :, np.newaxis]), self.u.shape[1], axis=2))
 
         # Inertia properties
         if segment_name.lower() not in ['plateform', 'foot', 'tibia', 'tigh', 'pelvis']:
@@ -103,17 +135,24 @@ class Segment:
     @classmethod
     def fromSegment(cls, Segment, sexe='M', weight=0,
                     segment_static=None, rigid_parameter=False, inertia='dumas',
-                    nm_list=None):
+                    nm_list=None, frame_prox=None):
 
         return cls(Segment.u, Segment.rp, Segment.rd, Segment.w, Segment.rm,
                    Segment.Btype_prox, Segment.Btype_dist,
                    Segment.segment_name, sexe, weight,
                    segment_static, rigid_parameter, inertia,
-                   nm_list)
+                   nm_list, frame_prox)
 
     def update(self):
+        self.length = np.sqrt(np.sum((self.rp - self.rd)**2, axis=0))
+        self.alpha = np.arccos(
+            np.sum((self.rp - self.rd)*self.w, axis=0)/self.length)
+        self.beta = np.arccos(np.sum(self.u*self.w, axis=0))
+        self.gamma = np.arccos(
+            np.sum(self.u*(self.rp-self.rd), axis=0)/self.length)
         self.Tprox = Q2T(self, self.Btype_prox, 'rp')
         self.Tdist = Q2T(self, self.Btype_dist, 'rd')
+
         return
 
     def get_distal_frame_glob(self):
@@ -155,13 +194,13 @@ class Segment:
     def get_phir(self):
         phir = np.zeros((6, 1, self.u.shape[1]))
         phir[0, :, :] = np.sum(self.u**2, 0)-np.ones((self.u.shape[1]))
-        phir[1, :, :] = np.sum(self.u*(self.rp-self.rd), 0) - self.length * \
-            np.cos(self.gamma)
-        phir[2, :, :] = np.sum(self.u*self.w, 0) - np.cos(self.beta)
+        phir[1, :, :] = np.sum(self.u*(self.rp-self.rd), 0) - self.length_mean * \
+            np.cos(self.gamma_mean)
+        phir[2, :, :] = np.sum(self.u*self.w, 0) - np.cos(self.beta_mean)
         phir[3, :, :] = np.sum((self.rp-self.rd)**2, 0) - \
-            self.length**2
+            self.length_mean**2
         phir[4, :, :] = np.sum((self.rp-self.rd)*self.w, 0) - \
-            self.length*np.cos(self.alpha)
+            self.length_mean*np.cos(self.alpha_mean)
         phir[5, :, :] = np.sum(self.w**2, 0)-np.ones(self.u.shape[1])
 
         return phir
