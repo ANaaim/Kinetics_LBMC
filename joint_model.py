@@ -248,6 +248,61 @@ class hinge_model:
         return dKlambdakdQ
 
 
+class constant_distance:
+
+    def __init__(self, segment_distal, segment_proximal, point_distal, point_proximal):
+        # Calcul matix
+        nVdistal = np.zeros((12, 3))
+        nVproximal = np.zeros((12, 3))
+
+        self.distance = np.mean(np.linalg.norm(
+            (point_distal-point_proximal), axis=0))
+
+        nv_temp_distal = np.mean(vnop_array(point_distal-segment_distal.rp,
+                                            segment_distal.u,
+                                            (segment_distal.rp-segment_distal.rd),
+                                            segment_distal.w), axis=1)
+
+        nv_temp_proximal = np.mean(vnop_array(point_proximal-segment_proximal.rp,
+                                              segment_proximal.u,
+                                              (segment_proximal.rp -
+                                               segment_proximal.rd),
+                                              segment_proximal.w), axis=1)
+
+        nVdistal[0:3, :] = nv_temp_distal[0]*np.eye(3)
+        nVdistal[3:6, :] = (1+nv_temp_distal[1])*np.eye(3)
+        nVdistal[6:9, :] = -nv_temp_distal[1]*np.eye(3)
+        nVdistal[9:12, :] = nv_temp_distal[2]*np.eye(3)
+
+        nVproximal[0:3, :] = nv_temp_proximal[0]*np.eye(3)
+        nVproximal[3:6, :] = (1+nv_temp_proximal[1])*np.eye(3)
+        nVproximal[6:9, :] = -nv_temp_proximal[1]*np.eye(3)
+        nVproximal[9:12, :] = nv_temp_proximal[2]*np.eye(3)
+
+        self.nVdistal = nVdistal
+        self.nVproximal = nVproximal
+        self.nb_constraint = 1
+
+    def get_phik(self, segment_distal, segment_proximal):
+        phik_temp = (np.dot(self.nVproximal.T, segment_proximal.Q) -
+                     np.dot(self.nVdistal.T, segment_distal.Q))
+        phik = np.linalg.norm(phik_temp, axis=0)**2-self.distance**2
+        return phik
+
+    # On ajoute les paramètre pour que meme si on met des paramètre ca fonctionne
+    def get_Kk(self, segment_distal, segment_proximal):
+        nb_frame = segment_distal.u.shape[1]
+        Kk = np.zeros((3, 2*12))
+        Kk[:, 0:12] = -2(np.dot(self.nVproximal.T, segment_proximal.Q) -
+                         np.dot(self.nVdistal.T, segment_distal.Q))  # (self.nVdistal.T)
+        Kk[:, 12:] = self.nVproximal.T
+        Kk_final = np.tile(Kk[:, :, np.newaxis], (1, 1, nb_frame))
+        return Kk_final
+
+    def get_dKlambdakdQ(self, nb_frame, lambda_k):
+        return np.zeros((2*12, 2*12, nb_frame))
+
+
 class no_model:
 
     def __init__(self):
