@@ -6,7 +6,7 @@ Created on 18/10/2019
 """
 import numpy as np
 
-#test
+
 def multi_body_optimisation(full_segment, full_model):
 
     nb_frame = full_segment[0].u.shape[1]
@@ -24,10 +24,20 @@ def multi_body_optimisation(full_segment, full_model):
     lambda_r = np.zeros((nb_segment*6, 1, nb_frame))
     lambda_k = np.zeros((nb_constraint, 1, nb_frame))
 
+    # Construction des éléments constants
+    Km = np.zeros((3*nb_marker, nb_segment*12, nb_frame))
+    ind_marker = 0
+    for ind_segment, segment in enumerate(full_segment):
+        Km[ind_marker*3:(ind_marker+len(segment.rm))*3,
+           ind_segment*12:(ind_segment+1)*12, :] = \
+            np.tile(segment.get_Km(), (1, 1, nb_frame))
+        ind_marker = ind_marker + len(segment.rm)
+
+    Full_KmT = np.einsum('mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), Km)
     error = 1
     step = 0
 
-    while error > 10**-12 and step < 200:
+    while error > 10**-12 and step < 50:
         step = step + 1
         print(step)
         # initialisation
@@ -44,10 +54,11 @@ def multi_body_optimisation(full_segment, full_model):
             Kr[6*ind_segment:6*(ind_segment+1),
                12*ind_segment:12*(ind_segment+1), :] = segment.get_Kr()
 
-            phim[ind_marker*3:(ind_marker+len(segment.rm))*3, :] = segment.get_phim()
-            Km[ind_marker*3:(ind_marker+len(segment.rm))*3,
-               ind_segment*12:(ind_segment+1)*12, :] = \
-                np.tile(segment.get_Km(), (1, 1, nb_frame))
+            phim[ind_marker*3:(ind_marker+len(segment.rm))
+                 * 3, :] = segment.get_phim()
+            # Km[ind_marker*3:(ind_marker+len(segment.rm))*3,
+            #    ind_segment*12:(ind_segment+1)*12, :] = \
+            #     np.tile(segment.get_Km(), (1, 1, nb_frame))
 
             temp_DQ = np.zeros((12, 12, nb_frame))
             diag_3 = np.identity(3)[:, :, np.newaxis]
@@ -139,9 +150,11 @@ def multi_body_optimisation(full_segment, full_model):
         F[nb_segment*12:nb_segment*12+nb_constraint, :, :] = phik
         F[nb_segment*12+nb_constraint:, :, :] = phir
 
-        dFdX[0:nb_segment*12,
-             0:nb_segment*12, :] = np.einsum('mnr,ndr->mdr',
-                                             np.transpose(Km, (1, 0, 2)), Km) + DKlambdaridQ_Total
+        # dFdX[0:nb_segment*12,
+        #      0:nb_segment*12, :] = np.einsum('mnr,ndr->mdr',
+        #                                      np.transpose(Km, (1, 0, 2)), Km) + DKlambdaridQ_Total
+        dFdX[0:nb_segment*12, 0:nb_segment*12,
+             :] = Full_KmT + DKlambdaridQ_Total
 
         dFdX[0:nb_segment*12,
              nb_segment*12:nb_segment*12+nb_constraint, :] = np.transpose(Kk, (1, 0, 2))
@@ -159,12 +172,11 @@ def multi_body_optimisation(full_segment, full_model):
         # Modification of lambda and segment
         for ind_segment, segment in enumerate(full_segment):
             lvl_seg = ind_segment*12
-            segment.u += np.copy(np.squeeze(dX[lvl_seg+0:lvl_seg+3, 0, :]))
-            segment.rp += np.copy(np.squeeze(dX[lvl_seg+3:lvl_seg+6, 0, :]))
-            segment.rd += np.copy(np.squeeze(dX[lvl_seg+6:lvl_seg+9, 0, :]))
-            segment.w += np.copy(np.squeeze(dX[lvl_seg+9:lvl_seg+12, 0, :]))
-
-            segment.Q += np.copy(np.squeeze(dX[lvl_seg+0:lvl_seg+12, 0, :]))
+            segment.u += np.squeeze(dX[lvl_seg+0:lvl_seg+3, 0, :])
+            segment.rp += np.squeeze(dX[lvl_seg+3:lvl_seg+6, 0, :])
+            segment.rd += np.squeeze(dX[lvl_seg+6:lvl_seg+9, 0, :])
+            segment.w += np.squeeze(dX[lvl_seg+9:lvl_seg+12, 0, :])
+            segment.Q += np.squeeze(dX[lvl_seg+0:lvl_seg+12, 0, :])
 
         lambda_k += dX[12*nb_segment:12*nb_segment+nb_constraint, :, :]
 
@@ -178,6 +190,7 @@ def multi_body_optimisation(full_segment, full_model):
     # update of all object
     for segment in full_segment:
         segment.update()
+
 
 def calculate_error(full_segment, full_model):
 
@@ -199,7 +212,6 @@ def calculate_error(full_segment, full_model):
     error = 1
     step = 0
 
-    
     step = step + 1
     print(step)
     # initialisation
@@ -216,7 +228,8 @@ def calculate_error(full_segment, full_model):
         Kr[6*ind_segment:6*(ind_segment+1),
             12*ind_segment:12*(ind_segment+1), :] = segment.get_Kr()
 
-        phim[ind_marker*3:(ind_marker+len(segment.rm))*3, :] = segment.get_phim()
+        phim[ind_marker*3:(ind_marker+len(segment.rm))
+             * 3, :] = segment.get_phim()
         Km[ind_marker*3:(ind_marker+len(segment.rm))*3,
             ind_segment*12:(ind_segment+1)*12, :] = \
             np.tile(segment.get_Km(), (1, 1, nb_frame))
@@ -264,18 +277,18 @@ def calculate_error(full_segment, full_model):
         phik_temp = constraint.get_phik(
             full_segment[ind_constraint], full_segment[ind_constraint+1])
         Kk_temp = constraint.get_Kk(full_segment[ind_constraint],
-                                       full_segment[ind_constraint+1])
+                                    full_segment[ind_constraint+1])
         lambda_k_temp = lambda_k[constraint_quantity:constraint_quantity +
-                                     constraint.nb_constraint, 0, :]
+                                 constraint.nb_constraint, 0, :]
 
         phik[constraint_quantity:constraint_quantity+constraint.nb_constraint,
-                 :, :] = np.copy(phik_temp[:, np.newaxis, :])
+             :, :] = np.copy(phik_temp[:, np.newaxis, :])
 
         Kk[constraint_quantity:constraint_quantity+constraint.nb_constraint,
-                ind_constraint*12:(ind_constraint+2)*12, :] = Kk_temp
+           ind_constraint*12:(ind_constraint+2)*12, :] = Kk_temp
 
         dKlambdakdQ[ind_constraint*12:(ind_constraint+2)*12, ind_constraint*12:(
-                ind_constraint+2)*12, :] = constraint.get_dKlambdakdQ(nb_frame, lambda_k_temp)
+            ind_constraint+2)*12, :] = constraint.get_dKlambdakdQ(nb_frame, lambda_k_temp)
 
         constraint_quantity = constraint_quantity + constraint.nb_constraint
 
@@ -283,15 +296,15 @@ def calculate_error(full_segment, full_model):
 
     # Error
     error_phik = np.mean(np.einsum('mnr,ndr->mdr',
-                                       np.transpose(phik, (1, 0, 2)), phik))
+                                   np.transpose(phik, (1, 0, 2)), phik))
     error_phim = np.mean(np.einsum('mnr,ndr->mdr',
-                                       np.transpose(phim, (1, 0, 2)), phim))
+                                   np.transpose(phim, (1, 0, 2)), phim))
     error_phir = np.mean(np.einsum('mnr,ndr->mdr',
-                                       np.transpose(phir, (1, 0, 2)), phir))
+                                   np.transpose(phir, (1, 0, 2)), phir))
     print('Error phim')
     print(error_phim)
     print('Error phir')
     print(error_phir)
     print('Error phik')
     print(error_phik)
-    return[phim,phik,phir]
+    return[phim, phik, phir]
