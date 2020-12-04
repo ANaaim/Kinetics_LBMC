@@ -5,7 +5,7 @@ Created on 28/01/2020
 @author: Alexandre Naaim
 """
 import numpy as np
-from vnop_array import vnop_array as vnop_array
+from .utils.vnop_array import vnop_array as vnop_array
 
 
 class spherical_model:

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from HomogeneousMatrix import HomogeneousMatrix
-from norm_vector import norm_vector as norm_vector
-
+from .HomogeneousMatrix import HomogeneousMatrix
+from .utils import norm_vector as norm_vector
 
 class Joint:
     """A class used to represente a antomical joint.

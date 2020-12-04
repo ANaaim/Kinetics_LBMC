@@ -1,6 +1,6 @@
-from vnop_array import vnop_array as vnop_array
-import inertia_matrix
-from HomogeneousMatrix import HomogeneousMatrix
+from .utils.vnop_array import vnop_array as vnop_array
+from .utils.inertia_matrix import dumas
+from .HomogeneousMatrix import HomogeneousMatrix
 import numpy as np
 # -*- coding: utf-8 -*-
 """Segment class used to define anatomical segment based on natural coordinate.
@@ -17,7 +17,7 @@ class Segment:
                  Btype_prox, Btype_dist,
                  segment_name, sexe='M', weight=0,
                  segment_static=None, rigid_parameter=False, inertia='dumas',
-                 nm_list=None, frame_prox = None):
+                 nm_list=None, frame_prox=None):
         self.segment_name = segment_name
         # Q vector parameters
         self.u = np.copy(u)
@@ -100,7 +100,7 @@ class Segment:
                                  :, np.newaxis], (1, nb_frame))
                 self.corr_prox = HomogeneousMatrix(X_eye, Y_eye, Z_eye, Or_eye)
             else:
-                
+
                 corr_temp = self.Tprox.inv() * frame_prox
                 corr_temp_mean = np.mean(corr_temp.T_homo, axis=2)
                 self.corr_prox = HomogeneousMatrix.fromHomo(
@@ -116,11 +116,11 @@ class Segment:
             segment_name = 'zero'
 
         # If a specific inertia is given (to take into account zero inertia)
-        if inertia is 'dumas':
-            self.m, self.rCs, self.Is, Js_temp = inertia_matrix.dumas(
+        if inertia == 'dumas':
+            self.m, self.rCs, self.Is, Js_temp = dumas(
                 weight, np.mean(self.length), sexe, segment_name)
-        elif inertia is 'zero':
-            self.m, self.rCs, self.Is, Js_temp = inertia_matrix.dumas(
+        elif inertia == 'zero':
+            self.m, self.rCs, self.Is, Js_temp = dumas(
                 weight, np.mean(self.length), sexe, 'zero')
         # We add a dimension do be sure that tile multiply the matrix on the 3rd
         # dimension

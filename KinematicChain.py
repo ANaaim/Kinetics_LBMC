@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import r2mobile
-from homogenous2rotation import homogenous2rotation as homogenous2rotation
-from Joint import Joint as Joint
+from .utils import r2mobile
+from .utils.homogenous2rotation import homogenous2rotation as homogenous2rotation
+from .Joint import Joint as Joint
 import numpy as np
 
 
