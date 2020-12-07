@@ -7,7 +7,7 @@ Created on Fri Feb 22 09:02:39 2019
 """
 import numpy as np
 from scipy import signal
-import ezc3d
+#import ezc3d
 import os
 
 
@@ -43,7 +43,7 @@ def plateforme_extraction(acq):
                 if name_param.lower() in name_analog.lower() and\
                         string_plateforme in name_analog.lower():
                     list_name_analog.append(name_analog)
-        
+
         if len(list_name_analog) > len(list_param):
             temp = [name for name in list_name_analog if (
                 'fp' in name.lower() or 'pf' in name.lower())]
@@ -56,11 +56,11 @@ def plateforme_extraction(acq):
         #corner_2 = np.array(corners[ind_plateform*12+3:ind_plateform*12+6])
         #corner_3 = np.array(corners[ind_plateform*12+6:ind_plateform*12+9])
         #corner_4 = np.array(corners[ind_plateform*12+9:ind_plateform*12+12])
-        
-        corner_1 = corners[:,0,ind_plateform]
-        corner_2 = corners[:,1,ind_plateform]
-        corner_3 = corners[:,2,ind_plateform]
-        corner_4 = corners[:,3,ind_plateform]
+
+        corner_1 = corners[:, 0, ind_plateform]
+        corner_2 = corners[:, 1, ind_plateform]
+        corner_3 = corners[:, 2, ind_plateform]
+        corner_4 = corners[:, 3, ind_plateform]
 
         X_platform = (corner_1-corner_2) / np.linalg.norm(corner_1-corner_2)
         Y_platform = (corner_2-corner_3) / np.linalg.norm(corner_2-corner_3)
@@ -78,10 +78,9 @@ def plateforme_extraction(acq):
         Z_sign = np.sign(Z_platform[Z_pos])
         mult_sign = np.array([X_sign, Y_sign, Z_sign])
 
-        #force_plateform_temp['origin'] = np.array(
+        # force_plateform_temp['origin'] = np.array(
         #    origin[ind_plateform*3:(ind_plateform+1)*3])*mult_sign
-        force_plateform_temp['origin'] = origin[:,ind_plateform]*mult_sign
-
+        force_plateform_temp['origin'] = origin[:, ind_plateform]*mult_sign
 
         mid_corner = (corner_1+corner_2+corner_3+corner_4)/4
 
@@ -141,7 +140,7 @@ def plateforme_extraction(acq):
 
         Xor = force_plateform_temp['origin_global'][0]
         Yor = force_plateform_temp['origin_global'][1]
-        # Her it is - because it seems that the origin is expressed in the global frame 
+        # Her it is - because it seems that the origin is expressed in the global frame
         Zor = -force_plateform_temp['origin_global'][2]
         # Calcul COP
         mask = Fz > 5
@@ -174,9 +173,12 @@ def plateforme_extraction(acq):
         F = np.array([Fx*mask, Fy*mask, Fz*mask])
         Or = np.array([Xor, Yor, Zor])
 
-        force_plateform_temp['CoP'] = CoP[:, 0::int(round(analog_frq/point_frq))]
-        force_plateform_temp['M_CoP'] = M_CoP[:, 0::int(round(analog_frq/point_frq))]
-        force_plateform_temp['F_CoP'] = F_CoP[:, 0::int(round(analog_frq/point_frq))]
+        force_plateform_temp['CoP'] = CoP[:,
+                                          0::int(round(analog_frq/point_frq))]
+        force_plateform_temp['M_CoP'] = M_CoP[:,
+                                              0::int(round(analog_frq/point_frq))]
+        force_plateform_temp['F_CoP'] = F_CoP[:,
+                                              0::int(round(analog_frq/point_frq))]
 
         force_plateform_temp['origin_plateform'] = np.tile(
             Or[:, np.newaxis], (1, force_plateform_temp['CoP'].shape[1]))
@@ -193,5 +195,5 @@ if __name__ == '__main__':
 
     filename = os.path.join('.', 'data', 'dev_tool_box.c3d')
     # Extraction du c3d
-    acq = ezc3d.c3d(filename)
-    force_plateforms = plateforme_extraction(acq)
+    #acq = ezc3d.c3d(filename)
+    #force_plateforms = plateforme_extraction(acq)
