@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from .HomogeneousMatrix import HomogeneousMatrix
-from .utils import norm_vector as norm_vector
+from .utils.norm_vector import norm_vector as norm_vector
+
 
 class Joint:
     """A class used to represente a antomical joint.
@@ -16,7 +17,7 @@ class Joint:
     :param frq_cp: Cut off frequency for the filetering after derivation
     :type frq_cp: double
     :attr phi_prox_origin: Action homogenous matrix at the proximal point of the
-     Segment
+    Segment
     :type phi_prox_origin: HomogeneousMatrix
 
     """
@@ -44,7 +45,8 @@ class Joint:
         Hg = HomogeneousMatrix.fromHomo(Hg)
 
         # Projection of the J from the proximal position to the origin
-        J_temp = segment_dist.Tprox * (segment_dist.Js * segment_dist.Tprox.transpose())
+        J_temp = segment_dist.Tprox * \
+            (segment_dist.Js * segment_dist.Tprox.transpose())
         # Calculaiton of W and H at the origine
         W_segment, H_segment = segment_dist.Tprox.vel_acc_Mat(frq_acq, frq_cp)
 
@@ -72,7 +74,8 @@ class Joint:
         Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
         print(joint_center.shape)
 
-        joint_center_mathomo = HomogeneousMatrix(X_glob, Y_glob, Z_glob, joint_center)
+        joint_center_mathomo = HomogeneousMatrix(
+            X_glob, Y_glob, Z_glob, joint_center)
 
         phi_projected = joint_center_mathomo.inv() * \
             (self.phi_prox_origin*joint_center_mathomo.inv().transpose())
@@ -88,11 +91,13 @@ class Joint:
         if rotation_seq.lower() == 'zyx':
             rot_z = frame_prox[:3, 2, :]
             rot_x = frame_dis[:3, 0, :]
-            rot_y = norm_vector(np.cross(rot_z, rot_x, axisa=0, axisb=0, axisc=0))
+            rot_y = norm_vector(
+                np.cross(rot_z, rot_x, axisa=0, axisb=0, axisc=0))
         elif rotation_seq.lower() == 'zxy':
             rot_z = frame_prox[:3, 2, :]
             rot_y = frame_dis[:3, 1, :]
-            rot_x = norm_vector(np.cross(rot_y, rot_z, axisa=0, axisb=0, axisc=0))
+            rot_x = norm_vector(
+                np.cross(rot_y, rot_z, axisa=0, axisb=0, axisc=0))
         # projection of F and M on the different axis.
         M_JCS = np.zeros((3, 1, nb_frame))
         F_JCS = np.zeros((3, 1, nb_frame))
