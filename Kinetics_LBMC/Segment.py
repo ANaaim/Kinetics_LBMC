@@ -12,7 +12,7 @@ Created on Wed Feb 20 13:21:05 2019
 
 
 class Segment:
-
+    # TODO add the name of the marker in the segment to be able to work on it
     def __init__(self, u, rp, rd, w, rm,
                  Btype_prox, Btype_dist,
                  segment_name, sexe='M', weight=0,
