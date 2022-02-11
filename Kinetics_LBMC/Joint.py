@@ -22,7 +22,7 @@ class Joint:
 
     """
 
-    def __init__(self, segment_dist, seg_phi_dist, frq_acq, frq_cp):
+    def __init__(self, segment_dist, seg_phi_dist, frq_acq, frq_cp, gravity_direction):
         """Construct the Joint object.
 
         :param segment_dist: Generally the distal Segment of the joint.
@@ -41,7 +41,8 @@ class Joint:
         nb_frame = segment_dist.Tprox.T_homo.shape[2]
         # Gravity
         Hg = np.zeros((4, 4, nb_frame))
-        Hg[1, 3, :] = -9.81
+        Hg[abs(gravity_direction), 3, :] = (
+            gravity_direction/abs(gravity_direction))*9.81
         Hg = HomogeneousMatrix.fromHomo(Hg)
 
         # Projection of the J from the proximal position to the origin
@@ -72,7 +73,7 @@ class Joint:
         X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
         Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
         Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
-        print(joint_center.shape)
+        # print(joint_center.shape)
 
         joint_center_mathomo = HomogeneousMatrix(
             X_glob, Y_glob, Z_glob, joint_center)
