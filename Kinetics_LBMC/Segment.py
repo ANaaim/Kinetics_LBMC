@@ -15,7 +15,7 @@ class Segment:
     # TODO add the name of the marker in the segment to be able to work on it
     def __init__(self, u, rp, rd, w, rm,
                  Btype_prox, Btype_dist,
-                 segment_name, sexe='M', weight=0,
+                 segment_name, rm_name, sexe='M', weight=0,
                  segment_static=None, rigid_parameter=False, inertia='dumas',
                  nm_list=None, frame_prox=None):
         self.segment_name = segment_name
@@ -24,7 +24,6 @@ class Segment:
         self.rp = np.copy(rp)
         self.rd = np.copy(rd)
         self.w = np.copy(w)
-
         Q = np.zeros((12, u.shape[1]))
         Q[0:3] = np.copy(u)
         Q[3:6] = np.copy(rp)
@@ -36,6 +35,7 @@ class Segment:
 
         # Point associated to the segment
         self.rm = rm
+        self.rm_name = rm_name
         # Faire different lenght, alpha et beta....
         # Les valeurs uniques sont pour les optimisations
         # Les valeurs calculer pour le segment dans son état est pour la cinématique
@@ -139,7 +139,7 @@ class Segment:
 
         return cls(Segment.u, Segment.rp, Segment.rd, Segment.w, Segment.rm,
                    Segment.Btype_prox, Segment.Btype_dist,
-                   Segment.segment_name, sexe, weight,
+                   Segment.segment_name, Segment.rm_name, sexe, weight,
                    segment_static, rigid_parameter, inertia,
                    nm_list, frame_prox)
 
