@@ -7,7 +7,7 @@ Created on 18/10/2019
 import numpy as np
 
 
-def multi_body_optimisation(full_segment, full_model):
+def multi_body_optimisation(full_segment, full_model, max_step=50):
 
     nb_frame = full_segment[0].u.shape[1]
     nb_segment = len(full_segment)
@@ -37,7 +37,7 @@ def multi_body_optimisation(full_segment, full_model):
     error = 1
     step = 0
 
-    while error > 10**-12 and step < 50:
+    while error > 10**-12 and step < max_step:
         step = step + 1
         print(step)
         # initialisation
