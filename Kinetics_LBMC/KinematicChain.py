@@ -9,8 +9,8 @@ class KinematicChain:
 
     def __init__(self, list_segment, phi_ext,
                  name_joint, name_rotation,
-                 pos_moment_calculation, frame_moment_calculation,
-                 moment_projection='JCS'):
+                 pos_moment_calculation, frame_moment_calculation, fpoint, fc,
+                 gravity_direction, moment_projection='JCS'):
 
         dictionnary_rotation = {'zyx': r2mobile.zyx,
                                 'zxy': r2mobile.zxy,
@@ -56,13 +56,13 @@ class KinematicChain:
         for ind_joint in range(len(name_joint)):
             if ind_joint == 0:
                 phi_joints[name_joint[ind_joint]] = Joint(list_segment[ind_joint],
-                                                          phi_ext[ind_joint], 200, 6)
+                                                          phi_ext[ind_joint], fpoint, fc, gravity_direction)
             else:
                 phi_temp = phi_joints[name_joint[ind_joint-1]].phi_prox_origin + \
                     phi_ext[ind_joint]
 
                 phi_joints[name_joint[ind_joint]] = Joint(
-                    list_segment[ind_joint], phi_temp, 200, 6)
+                    list_segment[ind_joint], phi_temp, fpoint, fc, gravity_direction)
         if moment_projection == 'JCS':
             for ind_joint in range(len(name_joint)):
                 force[name_joint[ind_joint]], moment[name_joint[ind_joint]] = \
