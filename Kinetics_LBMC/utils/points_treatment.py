@@ -37,12 +37,14 @@ def points_treatment(acq, fc_marker, unit_point='mm', vector_equivalent=[0, 2, 1
     frq_acq = acq['parameters']['POINT']['RATE']['value'][0]
 
     order_marker = 4.0
-
-    x = np.arange(0, nb_frame)
-    f = interpolate.interp1d(x, points, axis=2)
-    points_interp = f(tuple(x))
-    # Filtering
-    b, a = signal.butter(order_marker, fc_marker/(0.5*frq_acq))
-    points_treated = signal.filtfilt(b, a, points_interp, axis=2)
+    if points.shape[2] > 15:
+        x = np.arange(0, nb_frame)
+        f = interpolate.interp1d(x, points, axis=2)
+        points_interp = f(tuple(x))
+        # Filtering
+        b, a = signal.butter(order_marker, fc_marker/(0.5*frq_acq))
+        points_treated = signal.filtfilt(b, a, points_interp, axis=2)
+    else:
+        points_treated = points
 
     return points_treated
