@@ -79,3 +79,11 @@ class KinematicChain:
         self.euler_rel_frame = euler_rel_frame
         self.moment = moment
         self.force = force
+
+    def left_to_right(self):
+        for name_joint in self.euler_rel.keys():
+            # TODO: Be sure that flexion,force and moment are always at the same position.
+            self.euler_rel[0:2,:,:] = -self.euler_rel[0:2,:,:]
+            self.moment[0:2,:,:] = -self.moment[0:2,:,:]
+            self.force[0:2,:,:] = -self.force[0:2,:,:]
+            
