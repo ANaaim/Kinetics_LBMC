@@ -36,6 +36,10 @@ class spherical_model:
         nVproximal[6:9, :] = -nv_temp_proximal[1]*np.eye(3)
         nVproximal[9:12, :] = nv_temp_proximal[2]*np.eye(3)
 
+        # We add the value of the distal and proximal segment to be able to generate
+        # automatically build the tree of segment and link.
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
         self.nVdistal = nVdistal
         self.nVproximal = nVproximal
         self.nb_constraint = 3
@@ -85,6 +89,10 @@ class universal_model:
         else:
             self.theta_1 = theta_1
 
+        # We add the value of the distal and proximal segment to be able to generate
+        # automatically build the tree of segment and link.
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
         self.axe_distal = axe_distal
         self.axe_proximal = axe_proximal
 
@@ -204,7 +212,10 @@ class hinge_model:
                 np.sum(segment_proximal.w*segment_distal.u, axis=0)))
         else:
             self.theta_2 = theta_2
-
+        # We add the value of the distal and proximal segment to be able to generate
+        # automatically build the tree of segment and link.
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
         self.nb_constraint = 5
 
     def get_phik(self, segment_distal, segment_proximal):
@@ -279,6 +290,10 @@ class constant_distance:
         nVproximal[6:9, :] = -nv_temp_proximal[1]*np.eye(3)
         nVproximal[9:12, :] = nv_temp_proximal[2]*np.eye(3)
 
+        # We add the value of the distal and proximal segment to be able to generate
+        # automatically build the tree of segment and link.
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
         self.nVdistal = nVdistal
         self.nVproximal = nVproximal
         self.nb_constraint = 1
@@ -305,9 +320,13 @@ class constant_distance:
 
 class no_model:
 
-    def __init__(self):
+    def __init__(self, segment_distal, segment_proximal):
         # Calcul matix
         self.nb_constraint = 0
+        # We add the value of the distal and proximal segment to be able to generate
+        # automatically build the tree of segment and link.
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
 
     def get_phik(self, segment_distal, segment_proximal):
         nb_frame = segment_distal.u.shape[1]

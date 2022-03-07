@@ -34,16 +34,19 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
            ind_segment*12:(ind_segment+1)*12, :] = \
             np.tile(segment.get_Km(), (1, 1, nb_frame))
         W[ind_marker*3:(ind_marker+len(segment.rm))*3,
-          ind_marker*3:(ind_marker+len(segment.rm))*3,:] = \
-              segment.get_Weight_Matrix()
+          ind_marker*3:(ind_marker+len(segment.rm))*3, :] = \
+            segment.get_Weight_Matrix()
         ind_marker = ind_marker + len(segment.rm)
-    
+
     temp_KmT = np.einsum('mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), W)
     Full_KmT = np.einsum('mnr,ndr->mdr', temp_KmT, Km)
     error = 1
     step = 0
-
-    while error > 10**-12 and step < max_step:
+    # Value to be sure to enter the loop and large former error to be sure to be above any level that could be
+    # found.
+    error_evolution = 1
+    former_error = 1000000000000000
+    while error_evolution > 10**-2 and step < max_step:
         step = step + 1
         print(step)
         # initialisation
@@ -54,7 +57,7 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         phir = np.zeros((6*nb_segment, 1, nb_frame))
         Kr = np.zeros((6*nb_segment, 12*nb_segment, nb_frame))
         # Definition of the full phir,phim,Kr,Km matrix
-        
+
         for ind_segment, segment in enumerate(full_segment):
             phir[6*ind_segment:6*(ind_segment+1), :] = segment.get_phir()
 
@@ -107,21 +110,33 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
 
         constraint_quantity = 0
         for ind_constraint, constraint in enumerate(full_model):
+            ind_prox = constraint.proximal_indice
+            ind_dist = constraint.distal_indice
+
             phik_temp = constraint.get_phik(
-                full_segment[ind_constraint], full_segment[ind_constraint+1])
-            Kk_temp = constraint.get_Kk(full_segment[ind_constraint],
-                                        full_segment[ind_constraint+1])
+                full_segment[ind_dist], full_segment[ind_prox])
+
+            Kk_temp = constraint.get_Kk(full_segment[ind_dist],
+                                        full_segment[ind_prox])
+
             lambda_k_temp = lambda_k[constraint_quantity:constraint_quantity +
                                      constraint.nb_constraint, 0, :]
 
             phik[constraint_quantity:constraint_quantity+constraint.nb_constraint,
                  :, :] = np.copy(phik_temp[:, np.newaxis, :])
-
+            # Division of Kk and DklambakdQ
             Kk[constraint_quantity:constraint_quantity+constraint.nb_constraint,
-                ind_constraint*12:(ind_constraint+2)*12, :] = Kk_temp
+                ind_prox*12:(ind_prox+1)*12, :] = Kk_temp[:, 12:24, :]
+            Kk[constraint_quantity:constraint_quantity+constraint.nb_constraint,
+                ind_dist*12:(ind_dist+1)*12, :] = Kk_temp[:, 0:12, :]
 
-            dKlambdakdQ[ind_constraint*12:(ind_constraint+2)*12, ind_constraint*12:(
-                ind_constraint+2)*12, :] = constraint.get_dKlambdakdQ(nb_frame, lambda_k_temp)
+            dKlambdakdQ_temp = constraint.get_dKlambdakdQ(
+                nb_frame, lambda_k_temp)
+
+            dKlambdakdQ[ind_constraint*12:(ind_constraint+2)*12, ind_prox*12:(
+                ind_prox+1)*12, :] = dKlambdakdQ_temp[:, 12:24, :]
+            dKlambdakdQ[ind_constraint*12:(ind_constraint+2)*12, ind_dist*12:(
+                ind_dist+1)*12, :] = dKlambdakdQ_temp[:, 0:12, :]
 
             constraint_quantity = constraint_quantity + constraint.nb_constraint
 
@@ -130,8 +145,9 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         # Error
         error_phik = np.mean(np.einsum('mnr,ndr->mdr',
                                        np.transpose(phik, (1, 0, 2)), phik))
-        temp_error_phim = np.einsum('mnr,ndr->mdr',np.transpose(phim, (1, 0, 2)), W)
-        error_phim = np.mean(np.einsum('mnr,ndr->mdr',temp_error_phim, phim))
+        temp_error_phim = np.einsum(
+            'mnr,ndr->mdr', np.transpose(phim, (1, 0, 2)), W)
+        error_phim = np.mean(np.einsum('mnr,ndr->mdr', temp_error_phim, phim))
         error_phir = np.mean(np.einsum('mnr,ndr->mdr',
                                        np.transpose(phir, (1, 0, 2)), phir))
         print('Error phim')
@@ -146,7 +162,8 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         dFdX = np.zeros((nb_segment*12+nb_constraint+6*nb_segment,
                          12*nb_segment+nb_constraint+6*nb_segment,
                          nb_frame))
-        temp_Km_W_phim = np.einsum('mnr,ndr->mdr',np.transpose(Km, (1, 0, 2)),W)
+        temp_Km_W_phim = np.einsum(
+            'mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), W)
         F[0:nb_segment*12, :, :] = np.einsum('mnr,ndr->mdr',
                                              temp_Km_W_phim,
                                              phim) + np.einsum('mnr,ndr->mdr',
@@ -191,9 +208,30 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
 
         error = np.sum(np.sqrt(np.einsum('mnr,ndr->mdr',
                                          np.transpose(F, (1, 0, 2)), F)), axis=2)
+        # New error calculation
+        # TODO : Est ce que Fm permet bien uniquement le calcul de l'erreur phim.
+        F_m = F[0:nb_segment*12, :, :]
+        F_k = F[nb_segment*12:nb_segment*12+nb_constraint, :, :]
+        F_r = F[nb_segment*12+nb_constraint:, :, :]
+        error_phim = np.sum(np.sqrt(np.einsum('mnr,ndr->mdr',
+                                              np.transpose(F_m, (1, 0, 2)), F_m)), axis=2)
+        error_phim = np.sqrt(error_phim)/(phim.shape[0]/3*phim.shape[2])
+
+        error_phik = np.sum(np.sqrt(np.einsum('mnr,ndr->mdr',
+                                              np.transpose(F_k, (1, 0, 2)), F_k)), axis=2)
+        error_phik = np.sqrt(error_phik)/(phik.shape[0]/3*phik.shape[2])
+
+        error_phir = np.sum(np.sqrt(np.einsum('mnr,ndr->mdr',
+                                              np.transpose(F_r, (1, 0, 2)), F_r)), axis=2)
+        error_phir = np.sqrt(error_phir)/(phir.shape[0]/3*phir.shape[2])
+
+        error = error_phim/1000 + error_phik + error_phir
         print('Error optim')
         print(error)
-
+        error_evolution = abs(former_error-error)/former_error
+        print('percentage relative to former error')
+        print(error_evolution)
+        former_error = error
     # update of all object
     for segment in full_segment:
         segment.update()
