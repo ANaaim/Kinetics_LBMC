@@ -25,15 +25,21 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
     lambda_k = np.zeros((nb_constraint, 1, nb_frame))
 
     # Construction des éléments constants
+    # Weight Matrix
+    W = np.zeros((3*nb_marker, 3*nb_marker, nb_frame))
     Km = np.zeros((3*nb_marker, nb_segment*12, nb_frame))
     ind_marker = 0
     for ind_segment, segment in enumerate(full_segment):
         Km[ind_marker*3:(ind_marker+len(segment.rm))*3,
            ind_segment*12:(ind_segment+1)*12, :] = \
             np.tile(segment.get_Km(), (1, 1, nb_frame))
+        W[ind_marker*3:(ind_marker+len(segment.rm))*3,
+          ind_marker*3:(ind_marker+len(segment.rm))*3,:] = \
+              segment.get_Weight_Matrix()
         ind_marker = ind_marker + len(segment.rm)
-
-    Full_KmT = np.einsum('mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), Km)
+    
+    temp_KmT = np.einsum('mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), W)
+    Full_KmT = np.einsum('mnr,ndr->mdr', temp_KmT, Km)
     error = 1
     step = 0
 
@@ -48,6 +54,7 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         phir = np.zeros((6*nb_segment, 1, nb_frame))
         Kr = np.zeros((6*nb_segment, 12*nb_segment, nb_frame))
         # Definition of the full phir,phim,Kr,Km matrix
+        
         for ind_segment, segment in enumerate(full_segment):
             phir[6*ind_segment:6*(ind_segment+1), :] = segment.get_phir()
 
@@ -123,8 +130,8 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         # Error
         error_phik = np.mean(np.einsum('mnr,ndr->mdr',
                                        np.transpose(phik, (1, 0, 2)), phik))
-        error_phim = np.mean(np.einsum('mnr,ndr->mdr',
-                                       np.transpose(phim, (1, 0, 2)), phim))
+        temp_error_phim = np.einsum('mnr,ndr->mdr',np.transpose(phim, (1, 0, 2)), W)
+        error_phim = np.mean(np.einsum('mnr,ndr->mdr',temp_error_phim, phim))
         error_phir = np.mean(np.einsum('mnr,ndr->mdr',
                                        np.transpose(phir, (1, 0, 2)), phir))
         print('Error phim')
@@ -139,9 +146,9 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         dFdX = np.zeros((nb_segment*12+nb_constraint+6*nb_segment,
                          12*nb_segment+nb_constraint+6*nb_segment,
                          nb_frame))
-
+        temp_Km_W_phim = np.einsum('mnr,ndr->mdr',np.transpose(Km, (1, 0, 2)),W)
         F[0:nb_segment*12, :, :] = np.einsum('mnr,ndr->mdr',
-                                             np.transpose(Km, (1, 0, 2)),
+                                             temp_Km_W_phim,
                                              phim) + np.einsum('mnr,ndr->mdr',
                                                                np.transpose(np.concatenate(
                                                                    (Kk, Kr), axis=0), (1, 0, 2)),

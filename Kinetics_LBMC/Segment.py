@@ -13,7 +13,7 @@ Created on Wed Feb 20 13:21:05 2019
 
 class Segment:
     # TODO add the name of the marker in the segment to be able to work on it
-    def __init__(self, u, rp, rd, w, rm,
+    def __init__(self, u, rp, rd, w, rm, weight_rm,
                  Btype_prox, Btype_dist,
                  segment_name, rm_name, sexe='M', weight=0,
                  segment_static=None, rigid_parameter=False, inertia='dumas',
@@ -35,6 +35,8 @@ class Segment:
 
         # Point associated to the segment
         self.rm = rm
+        self.weight_rm = weight_rm
+        # TODO : test if weight_rm is same lenght as rm
         self.rm_name = rm_name
         # Faire different lenght, alpha et beta....
         # Les valeurs uniques sont pour les optimisations
@@ -228,6 +230,15 @@ class Segment:
         Kr[5, 9:12, :] = 2*self.w
 
         return Kr
+
+
+    def get_Weight_Matrix(self):
+        W = np.zeros((len(3*self.weight_rm), len(3*self.weight_rm), self.u.shape[1]))
+
+        for ind_weight, value_weight in enumerate(self.weight_rm):
+            W[3*(ind_weight):3*(ind_weight+1), 3*(ind_weight):3*(ind_weight+1), :] =  value_weight*np.diag(np.ones(3))[:,:,np.newaxis]
+
+        return W
 
 
 def Q2T(self, Btype, origin_str):
