@@ -10,12 +10,15 @@ Created on Wed Feb 20 13:21:05 2019
 @author: AdminXPS
 """
 
+# TODO : Add the external forces that are exerted on the solide ==> Prb should be given in global frame
+# if not during a MBO there is a risk that the position of the forces might be changed
+
 
 class Segment:
     # TODO add the name of the marker in the segment to be able to work on it
     def __init__(self, u, rp, rd, w, rm, weight_rm,
                  Btype_prox, Btype_dist,
-                 segment_name, rm_name, sexe='M', weight=0,
+                 segment_name, rm_name, sexe='M', weight=0, phi_ext=None,
                  segment_static=None, rigid_parameter=False, inertia='dumas',
                  nm_list=None, frame_prox=None):
         self.segment_name = segment_name
@@ -129,6 +132,11 @@ class Segment:
         Js_temp = Js_temp[:, :, np.newaxis]
         self.Js = HomogeneousMatrix.fromHomo(
             np.tile(Js_temp, (1, 1, u.shape[1])))
+        if phi_ext is None:
+            self.phi_ext = HomogeneousMatrix.fromHomo(
+                np.zeros((4, 4, u.shape[1])))
+        else:
+            self.phi_ext = phi_ext
 
         if nm_list is not None:
             print('marker_from_static')
@@ -231,12 +239,13 @@ class Segment:
 
         return Kr
 
-
     def get_Weight_Matrix(self):
-        W = np.zeros((len(3*self.weight_rm), len(3*self.weight_rm), self.u.shape[1]))
+        W = np.zeros(
+            (len(3*self.weight_rm), len(3*self.weight_rm), self.u.shape[1]))
 
         for ind_weight, value_weight in enumerate(self.weight_rm):
-            W[3*(ind_weight):3*(ind_weight+1), 3*(ind_weight):3*(ind_weight+1), :] =  value_weight*np.diag(np.ones(3))[:,:,np.newaxis]
+            W[3*(ind_weight):3*(ind_weight+1), 3*(ind_weight):3*(ind_weight+1),
+              :] = value_weight*np.diag(np.ones(3))[:, :, np.newaxis]
 
         return W
 

@@ -6,11 +6,35 @@ Created on 28/01/2020
 """
 import numpy as np
 from .utils.vnop_array import vnop_array as vnop_array
+from .HomogeneousMatrix import HomogeneousMatrix as HomogeneousMatrix
+# TODO : Correct the defintion of the point of moment calculus pour que ce soit des matrices homogène
 
 
 class spherical_model:
 
-    def __init__(self, segment_distal, segment_proximal, point_distal, point_proximal):
+    def __init__(self, segment_distal, segment_proximal, point_distal, point_proximal,
+                 name_joint, euler_sequences, point_of_moment_calculus=None, frame_moment=None):
+        # Information that will be used later to generate Kinematicschain
+        self.name_joint = name_joint
+        self.euler_sequences = euler_sequences
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            #self.point_of_moment_calculus = point_proximal
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, point_proximal)
+
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
         # Calcul matix
         nVdistal = np.zeros((12, 3))
         nVproximal = np.zeros((12, 3))
@@ -50,6 +74,8 @@ class spherical_model:
         return phik
 
     # On ajoute les paramètre pour que meme si on met des paramètre ca fonctionne
+    # Even if the segment_proximal is not used we keep it in the data to facilitate the loop
+    # in multi-body optimisation
     def get_Kk(self, segment_distal, segment_proximal):
         nb_frame = segment_distal.u.shape[1]
         Kk = np.zeros((3, 2*12))
@@ -64,8 +90,38 @@ class spherical_model:
 
 class universal_model:
 
-    def __init__(self, segment_distal, segment_proximal, axe_distal,
-                 axe_proximal, theta_1=None):
+    def __init__(self, segment_distal, segment_proximal, axe_distal, axe_proximal,
+                 name_joint, euler_sequences, point_of_moment_calculus=None, frame_moment=None, theta_1=None):
+        # segment_distal : a segment object
+        # segment_proximal : a segment object
+        # axe_distal : a string designing the distal vector that should be kept at constant angle
+        # axe_proximal : a string designing the proximal vector that should be kept at constant angle
+        # name_joint : a string containing the name of the joint
+        # euler_sequences : a string containing the euler sequences used to calculate kinematics in KinematicsChains
+        # point_of_moment_calculus : a HomogeneousMatrix object containing the point where the moment is calculated
+        # frame_moment : a HomogeneousMatrix object containing the frame in which the moment should be calculated if
+        # the moment in not calculated in the JCS (Joint Coordinate System)
+
+        # Information that will be used later to generate Kinematicschain
+        self.name_joint = name_joint
+        self.euler_sequences = euler_sequences
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, segment_proximal.rd)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
         # les axes peuvent être u v w
         if axe_distal == 'u':
             axe_dist_calc = segment_distal.u
@@ -198,7 +254,22 @@ class universal_model:
 
 class hinge_model:
 
-    def __init__(self, segment_distal, segment_proximal, theta_1=None, theta_2=None):
+    def __init__(self, segment_distal, segment_proximal,
+                 name_joint, euler_sequences, point_of_moment_calculus=None, frame_moment=None,
+                 theta_1=None, theta_2=None):
+        # Information that will be used later to generate Kinematicschain
+        self.name_joint = name_joint
+        self.euler_sequences = euler_sequences
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            self.point_of_moment_calculus = segment_proximal.rd
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
 
         if theta_1 is None:
             self.theta_1 = np.mean(np.arccos(
@@ -261,13 +332,32 @@ class hinge_model:
 
 class constant_distance:
 
-    def __init__(self, segment_distal, segment_proximal, point_distal, point_proximal):
+    def __init__(self, segment_distal, segment_proximal, point_distal, point_proximal,
+                 name_joint, euler_sequences, point_of_moment_calculus=None, frame_moment=None,
+                 distance=None):
+
+        # Information that will be used later to generate Kinematicschain
+        self.name_joint = name_joint
+        self.euler_sequences = euler_sequences
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            self.point_of_moment_calculus = point_proximal
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
         # Calcul matix
         nVdistal = np.zeros((12, 3))
         nVproximal = np.zeros((12, 3))
-
-        self.distance = np.mean(np.linalg.norm(
-            (point_distal-point_proximal), axis=0))
+        if distance is None:
+            self.distance = np.mean(np.linalg.norm(
+                (point_distal-point_proximal), axis=0))
+        else:
+            self.distance = distance
 
         nv_temp_distal = np.mean(vnop_array(point_distal-segment_distal.rp,
                                             segment_distal.u,
@@ -320,7 +410,27 @@ class constant_distance:
 
 class no_model:
 
-    def __init__(self, segment_distal, segment_proximal):
+    def __init__(self, segment_distal, segment_proximal,
+                 name_joint, euler_sequences, point_of_moment_calculus=None, frame_moment=None):
+        # Information that will be used later to generate Kinematicschain
+        self.name_joint = name_joint
+        self.euler_sequences = euler_sequences
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, segment_proximal.rd)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
         # Calcul matix
         self.nb_constraint = 0
         # We add the value of the distal and proximal segment to be able to generate
