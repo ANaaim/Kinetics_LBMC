@@ -7,7 +7,6 @@ Created on 28/01/2020
 import numpy as np
 from .utils.vnop_array import vnop_array as vnop_array
 from .HomogeneousMatrix import HomogeneousMatrix as HomogeneousMatrix
-# TODO : Correct the defintion of the point of moment calculus pour que ce soit des matrices homogène
 
 
 class spherical_model:
@@ -19,14 +18,12 @@ class spherical_model:
         self.euler_sequences = euler_sequences
         # Point where the forces and moment are calculated
         if point_of_moment_calculus is None:
-            #self.point_of_moment_calculus = point_proximal
             nb_frame = segment_distal.u.shape[1]
             X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
             Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
             Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
             self.point_of_moment_calculus = HomogeneousMatrix(
                 X_glob, Y_glob, Z_glob, point_proximal)
-
         else:
             self.point_of_moment_calculus = point_of_moment_calculus
 
@@ -107,7 +104,6 @@ class universal_model:
         self.euler_sequences = euler_sequences
         # Point where the forces and moment are calculated
         if point_of_moment_calculus is None:
-
             nb_frame = segment_distal.u.shape[1]
             X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
             Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
@@ -262,7 +258,12 @@ class hinge_model:
         self.euler_sequences = euler_sequences
         # Point where the forces and moment are calculated
         if point_of_moment_calculus is None:
-            self.point_of_moment_calculus = segment_proximal.rd
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, segment_proximal.rd)
         else:
             self.point_of_moment_calculus = point_of_moment_calculus
 
@@ -341,7 +342,12 @@ class constant_distance:
         self.euler_sequences = euler_sequences
         # Point where the forces and moment are calculated
         if point_of_moment_calculus is None:
-            self.point_of_moment_calculus = point_proximal
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, segment_proximal.rd)
         else:
             self.point_of_moment_calculus = point_of_moment_calculus
 
