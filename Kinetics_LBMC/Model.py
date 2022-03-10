@@ -42,7 +42,7 @@ class Model:
         # we return nothing as the data are modified in the multibody optimisation function
         return
 
-    def kinematics_only(self, point_frq, gravity_direction, cut_off_frequency=12, projection_moment='JCS'):
+    def kinematics_only(self, point_frq, gravity_direction, unit_point, cut_off_frequency=12, projection_moment='JCS'):
         joined_list_joint = self.list_joint_mbo + self.list_joint_kinematics_only
 
         list_full_segment, list_joint, list_link = create_segment_list_from_joint(
@@ -56,7 +56,7 @@ class Model:
             full_list_all_path_joint += list_all_path_joint
 
         all_multiseg = calculate_multiseg(joined_list_joint, list_full_segment, full_list_all_path, full_list_all_path_joint,
-                                          point_frq, cut_off_frequency, gravity_direction, projection_moment)
+                                          point_frq, cut_off_frequency, gravity_direction, unit_point, projection_moment)
         return all_multiseg
 
 
@@ -137,7 +137,7 @@ def create_data_for_kinematics(list_full_segment, root, list_link):
 
 
 def calculate_multiseg(list_full_joint, list_full_segment, list_all_path, list_all_path_joint,
-                       point_frq, cut_off_frequency, gravity_direction, projection_moment):
+                       point_frq, cut_off_frequency, gravity_direction, unit_point, projection_moment):
     # Creation of the information for the kinematics chain from the link
     list_all_segment = list()
     list_all_phi_ext = list()
@@ -189,7 +189,7 @@ def calculate_multiseg(list_full_joint, list_full_segment, list_all_path, list_a
         multiseg = KinematicChain(list_segment, list_phi_ext,
                                   list_name_joint, list_name_rotation,
                                   list_pos_moment_calculation, list_frame_moment_calculation, point_frq, cut_off_frequency,
-                                  gravity_direction, projection_moment)
+                                  gravity_direction, unit_point, projection_moment)
         all_multiseg.append(multiseg)
 
     return all_multiseg

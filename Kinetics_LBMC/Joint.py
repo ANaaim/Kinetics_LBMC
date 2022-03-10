@@ -22,7 +22,7 @@ class Joint:
 
     """
 
-    def __init__(self, segment_dist, seg_phi_dist, frq_acq, frq_cp, gravity_direction):
+    def __init__(self, segment_dist, seg_phi_dist, frq_acq, frq_cp, gravity_direction, unit_point):
         """Construct the Joint object.
 
         :param segment_dist: Generally the distal Segment of the joint.
@@ -40,9 +40,17 @@ class Joint:
         # seg_phi_dist should be expressed at the origin
         nb_frame = segment_dist.Tprox.T_homo.shape[2]
         # Gravity
+        if unit_point == 'mm':
+            norm_gravity = 9810
+        elif unit_point == 'm':
+            norm_gravity = 9.81
+        else:
+            print('The unit '+unit_point +
+                  ' cannot be considered for dynamic calculation. It should be m or mm.')
+
         Hg = np.zeros((4, 4, nb_frame))
         Hg[abs(gravity_direction), 3, :] = (
-            gravity_direction/abs(gravity_direction))*9.81
+            gravity_direction/abs(gravity_direction))*norm_gravity
         Hg = HomogeneousMatrix.fromHomo(Hg)
 
         # Projection of the J from the proximal position to the origin
