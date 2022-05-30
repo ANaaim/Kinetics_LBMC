@@ -7,7 +7,17 @@ import time
 
 class Model:
 
+
     def __init__(self, list_joint_mbo, list_joint_kinematics_only=None):
+        """Initiation of the model based on two list. The joint that will be used in the multi body optimisation 
+        represent the different link for the multiple body joint optimisation. The other link such as link from a segment 
+        to a forceplateforme shoud be put in the list_joint_kinematics_only
+
+        :param list_joint_mbo: list of _description_
+        :type list_joint_mbo: _type_
+        :param list_joint_kinematics_only: _description_, defaults to None
+        :type list_joint_kinematics_only: _type_, optional
+        """
         # list_joint_mbo is the list of joints of the multibody optimisation
         # To be able to add other solid that should not be optimised such as
         # the forceplatform, we need to add them only when we do calculation of the kinematics
@@ -32,14 +42,24 @@ class Model:
 
         self.list_root = list_root
 
-    def mbo(self, max_iter=50):
+    def mbo(self, max_iter=50,time_process= False):
+        """_summary_
+
+        :param max_iter: number of iteration allowed during the newton-Raphson optimisation, defaults to 50
+        :type max_iter: int, optional
+        :param time_process: Define if the multibody optmisation should be time, defaults to False
+        :type time_process: bool, optional
+        """
+        
         list_full_segment, list_joint, list_link = create_segment_list_from_joint(
             self.list_joint_mbo)
-        start_time = time.time()
+        if time_process:
+            start_time = time.time()
         multi_body_optimisation(list_full_segment, list_joint, max_iter)
-        final_time = time.time() - start_time
-        print("--- %s seconds ---" % (final_time))
-        # we return nothing as the data are modified in the multibody optimisation function
+        if time_process:
+            final_time = time.time() - start_time
+            print("--- %s seconds ---" % (final_time))
+        # Nothing shoudl be returned as the data are modified in the multibody optimisation function
         return
 
     def kinematics_only(self, point_frq, gravity_direction, unit_point, cut_off_frequency=12, projection_moment='JCS'):
