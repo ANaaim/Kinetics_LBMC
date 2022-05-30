@@ -7,7 +7,7 @@ import numpy as np
 
 Created on Wed Feb 20 13:21:05 2019
 
-@author: AdminXPS
+@author: Alexandre Naaïm
 """
 
 # TODO : Add the external forces that are exerted on the solide ==> Prb should be given in global frame
@@ -116,20 +116,33 @@ class Segment:
             self.corr_prox = HomogeneousMatrix.fromHomo(np.repeat(
                 (corr_temp_mean[:, :, np.newaxis]), self.u.shape[1], axis=2))
 
-        # Inertia properties
-        if segment_name.lower() not in ['plateform', 'foot', 'tibia', 'tigh', 'pelvis']:
-            segment_name = 'zero'
+        list_valid_name_inertia = ['platform', 'head', 'thorax', 'abdomen',
+                                   'pelvis', 'arm', 'forearm', 'hand', 'thigh', 'tibia', 'foot']
+        name_inertia_given = False
+        for name in list_valid_name_inertia:
+            if name in segment_name.lower():
+                segment_name_inertia = name
+                name_inertia_given = True
+
+        if not name_inertia_given:
+            segment_name_inertia = segment_name
+            # Inertia properties
+        if segment_name_inertia.lower() not in list_valid_name_inertia:
+            segment_name_inertia = 'zero'
+        # TODO : inertia properties need to be corrected relative to the side of the segment
+        # in order to have correct position
 
         # If a specific inertia is given (to take into account zero inertia)
         if inertia == 'dumas':
             self.m, self.rCs, self.Is, Js_temp = dumas(
-                weight, np.mean(self.length), sexe, segment_name)
+                weight, np.mean(self.length), sexe, segment_name_inertia)
         elif inertia == 'zero':
             self.m, self.rCs, self.Is, Js_temp = dumas(
                 weight, np.mean(self.length), sexe, 'zero')
         # We add a dimension do be sure that tile multiply the matrix on the 3rd
         # dimension
         Js_temp = Js_temp[:, :, np.newaxis]
+
         self.Js = HomogeneousMatrix.fromHomo(
             np.tile(Js_temp, (1, 1, u.shape[1])))
         if phi_ext is None:
