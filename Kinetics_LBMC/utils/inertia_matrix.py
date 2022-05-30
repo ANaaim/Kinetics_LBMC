@@ -16,7 +16,7 @@ def dumas(weight, length_segment, sexe, segment_name):
     :param type length_segment: Lenght of the segment (unit should be the same
     as in the rest of the program)
     :param type sexe: Sexe of the subject
-    :param type segment_name: name of the segment (can be plateform, foot,
+    :param type segment_name: name of the segment (can be platform, foot,
     tibia, thigh, pelvis)
     :return: List with the mass of the segement(ms), the position of the center
     of mass respect to the segment reference frame (rCs)
@@ -28,7 +28,7 @@ def dumas(weight, length_segment, sexe, segment_name):
     def nested_dict(): return defaultdict(nested_dict)
     inertia = nested_dict()
 
-    inertia['mass_perc']['F']['plateform'] = 0
+    inertia['mass_perc']['F']['platform'] = 0
     inertia['mass_perc']['F']['zero'] = 0
 
     inertia['mass_perc']['F']['head'] = 6.7
@@ -42,7 +42,7 @@ def dumas(weight, length_segment, sexe, segment_name):
     inertia['mass_perc']['F']['tibia'] = 4.5
     inertia['mass_perc']['F']['foot'] = 1
 
-    inertia['perc_length']['F']['plateform'] = np.array([0, 0, 0])
+    inertia['perc_length']['F']['platform'] = np.array([0, 0, 0])
     inertia['perc_length']['F']['zero'] = np.array([0, 0, 0])
 
     inertia['perc_length']['F']['head'] = np.array([0.8, 55.9, -0.1])/100
@@ -98,7 +98,7 @@ def dumas(weight, length_segment, sexe, segment_name):
                                           [-15, 50, -5],
                                           [9,   -5, 50]])**2/10000
 
-    inertia['mass_perc']['M']['plateform'] = 0
+    inertia['mass_perc']['M']['platform'] = 0
     inertia['mass_perc']['M']['zero'] = 0
 
     inertia['mass_perc']['M']['head'] = 6.7
@@ -112,7 +112,7 @@ def dumas(weight, length_segment, sexe, segment_name):
     inertia['mass_perc']['M']['tibia'] = 4.8
     inertia['mass_perc']['M']['foot'] = 1.2
 
-    inertia['perc_length']['M']['plateform'] = np.array([0, 0, 0])
+    inertia['perc_length']['M']['platform'] = np.array([0, 0, 0])
     inertia['perc_length']['M']['zero'] = np.array([0, 0, 0])
     inertia['perc_length']['M']['head'] = np.array([2.0, 53.4, 0.1])/100
     inertia['perc_length']['M']['thorax'] = np.array([0.0, -55.5, -0.4])/100
@@ -126,9 +126,9 @@ def dumas(weight, length_segment, sexe, segment_name):
     inertia['perc_length']['M']['tibia'] = np.array([-4.8,  -41, 0.7])/100
     inertia['perc_length']['M']['foot'] = np.array([50.2, -19.9, 3.4])/100
 
-    inertia['J']['M']['plateform'] = np.array([[0, 0,  0],
-                                               [0, 0, 0],
-                                               [0, 0,  0]])**2/10000
+    inertia['J']['M']['platform'] = np.array([[0, 0,  0],
+                                              [0, 0, 0],
+                                              [0, 0,  0]])**2/10000
     inertia['J']['M']['zero'] = np.array([[0, 0,  0],
                                           [0, 0, 0],
                                           [0, 0,  0]])**2/10000
@@ -190,7 +190,7 @@ def zeros_inertia(weight, length_segment, sexe, segment_name):
     :param type length_segment: Lenght of the segment (unit should be the same
     as in the rest of the program)
     :param type sexe: Sexe of the subject
-    :param type segment_name: name of the segment (can be plateform, foot,
+    :param type segment_name: name of the segment (can be platform, foot,
     tibia, thigh, pelvis)
     :return: List with the mass of the segement(ms), the position of the center
     of mass respect to the segment reference frame (rCs)
@@ -202,13 +202,13 @@ def zeros_inertia(weight, length_segment, sexe, segment_name):
     def nested_dict(): return defaultdict(nested_dict)
     inertia = nested_dict()
 
-    inertia['mass_perc']['F']['plateform'] = 0
+    inertia['mass_perc']['F']['platform'] = 0
     inertia['mass_perc']['F']['foot'] = 0
     inertia['mass_perc']['F']['tibia'] = 0
     inertia['mass_perc']['F']['thigh'] = 0
     inertia['mass_perc']['F']['pelvis'] = 0
 
-    inertia['perc_length']['F']['plateform'] = np.array([0, 0, 0])
+    inertia['perc_length']['F']['platform'] = np.array([0, 0, 0])
     inertia['perc_length']['F']['foot'] = np.array([38.2, -30.9, 5.5])/100
     inertia['perc_length']['F']['tibia'] = np.array([-4.9,  -40.4, 3.1])/100
     inertia['perc_length']['F']['thigh'] = np.array([-7.7, -37.7, 0.8])/100
@@ -230,21 +230,21 @@ def zeros_inertia(weight, length_segment, sexe, segment_name):
                                             [0, 0, 0],
                                             [0, 0,  0]])**2/10000
 
-    inertia['mass_perc']['M']['plateform'] = 0
+    inertia['mass_perc']['M']['platform'] = 0
     inertia['mass_perc']['M']['foot'] = 0
     inertia['mass_perc']['M']['tibia'] = 0
     inertia['mass_perc']['M']['thigh'] = 0
     inertia['mass_perc']['M']['pelvis'] = 0
 
-    inertia['perc_length']['M']['plateform'] = np.array([0, 0, 0])
+    inertia['perc_length']['M']['platform'] = np.array([0, 0, 0])
     inertia['perc_length']['M']['foot'] = np.array([50.2, -19.9, 3.4])/100
     inertia['perc_length']['M']['tibia'] = np.array([-4.8,  -41, 0.7])/100
     inertia['perc_length']['M']['thigh'] = np.array([-4.1, -42.9, 3.3])/100
     inertia['perc_length']['M']['pelvis'] = np.array([-0.2, -28.2, 0.6])/100
 
-    inertia['J']['M']['plateform'] = np.array([[0, 0,  0],
-                                               [0, 0, 0],
-                                               [0, 0,  0]])**2/10000
+    inertia['J']['M']['platform'] = np.array([[0, 0,  0],
+                                              [0, 0, 0],
+                                              [0, 0,  0]])**2/10000
     inertia['J']['M']['foot'] = np.array([[0, 0,  0],
                                           [0, 0, 0],
                                           [0, 0,  0]])**2/10000
