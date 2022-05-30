@@ -6,6 +6,19 @@ import numpy as np
 
 
 class KinematicChain:
+    """A kinematic chain is an object allowing to calculate the kinematics and dynamics of a system
+    of rigid bodies using a recursive methods. 
+
+    :param list_segment: a list of the segments composing the kinematic chain from the most distal segment of the chain to the root.
+    :type list_segment: list of class:`Segment`
+     [ParamDescription], defaults to [DefaultParamVal]
+    :type [ParamName]: [ParamType](, optional)
+    ...
+    :raises [ErrorType]: [ErrorDescription]
+    ...
+    :return: [ReturnDescription]
+    :rtype: [ReturnType]
+    """
 
     def __init__(self, list_segment, phi_ext,
                  name_joint, name_rotation,

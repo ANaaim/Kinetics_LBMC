@@ -12,7 +12,7 @@ class HomogeneousMatrix:
     """Creation of a homogeneous matrix using the X, Y, Z and Origin.
 
     References :
-    Giovanni LEGNANI©, Paolo RIGHETTINI, Bruno ZAPPA, Federico CASOLO
+    Giovanni LEGNANI, Paolo RIGHETTINI, Bruno ZAPPA, Federico CASOLO
     A homogenous matrix approach to 3D kinematics and dynamics (1996)
 
     :param X:  X vector of the homogeneous matrix
@@ -32,7 +32,7 @@ class HomogeneousMatrix:
         """Creation of a homogeneous matrix using the X, Y, Z and Origin.
 
         References :
-        Giovanni LEGNANI©, Paolo RIGHETTINI, Bruno ZAPPA, Federico CASOLO
+        Giovanni LEGNANI, Paolo RIGHETTINI, Bruno ZAPPA, Federico CASOLO
         A homogenous matrix approach to 3D kinematics and dynamics (1996)
 
         :param X:  X vector of the homogeneous matrix
@@ -102,6 +102,7 @@ class HomogeneousMatrix:
 
     def vel_acc_Mat(self, frq_point, fq_cutoff):
         """Calculate the H and W homogeneous matrix.
+        TODO : Explain what are those two beautiful matrix 
 
         W = M'inv(M)
         H = M''inv(M)
@@ -155,6 +156,9 @@ class HomogeneousMatrix:
         return HomogeneousMatrix.fromHomo(transpose_homo)
 
     def __mul__(self, other):
+        """
+        
+        """
         return HomogeneousMatrix.fromHomo(np.einsum('mnr,ndr->mdr', self.T_homo, other.T_homo))
 
     def __add__(self, other):
