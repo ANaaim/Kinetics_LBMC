@@ -12,11 +12,9 @@ def yxz(rotation_matrix):
     Computation of Euler angles from a rotation matrix (with YXZ mobile sequences)
     Tait bryan angles from : https://en.wikipedia.org/wiki/Euler_angles
     """
-    rot_y = np.arctan2(rotation_matrix[0, 2, :],
-                       rotation_matrix[2, 2, :])
+    rot_y = np.arctan2(rotation_matrix[0, 2, :], rotation_matrix[2, 2, :])
     rot_x = np.arcsin(-rotation_matrix[1, 2, :])
-    rot_z = np.arctan2(rotation_matrix[1, 0, :],
-                       rotation_matrix[1, 1, :])
+    rot_z = np.arctan2(rotation_matrix[1, 0, :], rotation_matrix[1, 1, :])
 
     return np.array([rot_z, rot_y, rot_x])
 
@@ -26,13 +24,11 @@ def yxy(rotation_matrix):
     Computation of Euler angles from a rotation matrix (with YXY mobile sequences)
     proper euler angles : https://en.wikipedia.org/wiki/Euler_angles
     """
-    rot_y1 = np.arctan2(rotation_matrix[0, 1, :],
-                        rotation_matrix[2, 1, :])
+    rot_y1 = np.arctan2(rotation_matrix[0, 1, :], rotation_matrix[2, 1, :])
 
     rot_x1 = np.arccos(rotation_matrix[1, 1, :])
 
-    rot_y2 = np.arctan2(rotation_matrix[1, 0, :],
-                        -rotation_matrix[1, 2, :])
+    rot_y2 = np.arctan2(rotation_matrix[1, 0, :], -rotation_matrix[1, 2, :])
     return np.array([rot_y1, rot_x1, rot_y2])
 
 
@@ -62,15 +58,13 @@ def zyx(rotation_matrix):
     """
     # Tetha1 (about Z proximal SCS axis):
     # e.g., flexion-extension at the ankle
-    rot_z = np.arctan2(rotation_matrix[1, 0, :],
-                       rotation_matrix[0, 0, :])
+    rot_z = np.arctan2(rotation_matrix[1, 0, :], rotation_matrix[0, 0, :])
     # Tetha2 (about Y floating axis):
     # e.g., abduction-adduction at the ankle
     rot_y = np.arcsin(-rotation_matrix[2, 0, :])
     # Tetha3 (about X distal SCS axis):
     # e.g., internal-external rotation at the ankle
-    rot_x = np.arctan2(rotation_matrix[2, 1, :],
-                       rotation_matrix[2, 2, :])
+    rot_x = np.arctan2(rotation_matrix[2, 1, :], rotation_matrix[2, 2, :])
     return np.array([rot_z, rot_y, rot_x])
 
 
@@ -102,13 +96,11 @@ def zxy(rotation_matrix):
 
     """
     # Tetha1: Flexion-Extension (about Z proximal SCS axis)
-    rot_z = np.arctan2(-rotation_matrix[0, 1, :],
-                       rotation_matrix[1, 1, :])
+    rot_z = np.arctan2(-rotation_matrix[0, 1, :], rotation_matrix[1, 1, :])
     # Tetha2: Abduction-Adduction (about X floating axis)
     rot_x = np.arcsin(rotation_matrix[2, 1, :])
     # Tetha3: Internal-External Rotation (about Y distal SCS axis)
-    rot_y = np.arctan2(-rotation_matrix[2, 0, :],
-                       rotation_matrix[2, 2, :])
+    rot_y = np.arctan2(-rotation_matrix[2, 0, :], rotation_matrix[2, 2, :])
     return np.array([rot_z, rot_x, rot_y])
 
 
@@ -137,13 +129,11 @@ def xzy(rotation_matrix):
     """
     # Tetha1 (about X proximal SCS axis):
     # e.g., abduction-adduction at the shoulder
-    rot_x = np.arctan2(rotation_matrix[2, 1, :],
-                       rotation_matrix[1, 1, :])
+    rot_x = np.arctan2(rotation_matrix[2, 1, :], rotation_matrix[1, 1, :])
     # Tetha2 (about Z floating axis):
     # e.g., flexion-extension at the shoulder
     rot_z = np.arcsin(-rotation_matrix[0, 1, :])
     # Tetha3 (about Y distal SCS axis):
     # e.g., internal-external rotation at the shoulder
-    rot_y = np.arctan2(rotation_matrix[0, 2, :],
-                       rotation_matrix[0, 0, :])
+    rot_y = np.arctan2(rotation_matrix[0, 2, :], rotation_matrix[0, 0, :])
     return np.array([rot_x, rot_z, rot_y])

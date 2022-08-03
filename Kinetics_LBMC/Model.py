@@ -6,11 +6,9 @@ import time
 
 
 class Model:
-
-
     def __init__(self, list_joint_mbo, list_joint_kinematics_only=None):
-        """Initiation of the model based on two list. The joint that will be used in the multi body optimisation 
-        represent the different link for the multiple body joint optimisation. The other link such as link from a segment 
+        """Initiation of the model based on two list. The joint that will be used in the multi body optimisation
+        represent the different link for the multiple body joint optimisation. The other link such as link from a segment
         to a forceplateforme shoud be put in the list_joint_kinematics_only
 
         :param list_joint_mbo: list of _description_
@@ -42,7 +40,7 @@ class Model:
 
         self.list_root = list_root
 
-    def mbo(self, max_iter=50,time_process= False):
+    def mbo(self, max_iter=50, time_process=False):
         """_summary_
 
         :param max_iter: number of iteration allowed during the newton-Raphson optimisation, defaults to 50
@@ -50,9 +48,8 @@ class Model:
         :param time_process: Define if the multibody optmisation should be time, defaults to False
         :type time_process: bool, optional
         """
-        
-        list_full_segment, list_joint, list_link = create_segment_list_from_joint(
-            self.list_joint_mbo)
+
+        list_full_segment, list_joint, list_link = create_segment_list_from_joint(self.list_joint_mbo)
         if time_process:
             start_time = time.time()
         multi_body_optimisation(list_full_segment, list_joint, max_iter)
@@ -62,21 +59,28 @@ class Model:
         # Nothing shoudl be returned as the data are modified in the multibody optimisation function
         return
 
-    def kinematics_only(self, point_frq, gravity_direction, unit_point, cut_off_frequency=12, projection_moment='JCS'):
+    def kinematics_only(self, point_frq, gravity_direction, unit_point, cut_off_frequency=12, projection_moment="JCS"):
         joined_list_joint = self.list_joint_mbo + self.list_joint_kinematics_only
 
-        list_full_segment, list_joint, list_link = create_segment_list_from_joint(
-            joined_list_joint)
+        list_full_segment, list_joint, list_link = create_segment_list_from_joint(joined_list_joint)
         full_list_all_path = list()
         full_list_all_path_joint = list()
         for root in self.list_root:
-            list_all_path, list_all_path_joint = create_data_for_kinematics(
-                list_full_segment, root, list_link)
+            list_all_path, list_all_path_joint = create_data_for_kinematics(list_full_segment, root, list_link)
             full_list_all_path += list_all_path
             full_list_all_path_joint += list_all_path_joint
 
-        all_multiseg = calculate_multiseg(joined_list_joint, list_full_segment, full_list_all_path, full_list_all_path_joint,
-                                          point_frq, cut_off_frequency, gravity_direction, unit_point, projection_moment)
+        all_multiseg = calculate_multiseg(
+            joined_list_joint,
+            list_full_segment,
+            full_list_all_path,
+            full_list_all_path_joint,
+            point_frq,
+            cut_off_frequency,
+            gravity_direction,
+            unit_point,
+            projection_moment,
+        )
         return all_multiseg
 
 
@@ -96,12 +100,9 @@ def create_segment_list_from_joint(list_joint):
             list_full_segment.append(joint.segment_distal)
         if joint.segment_proximal not in list_full_segment:
             list_full_segment.append(joint.segment_proximal)
-        position_segment_proximal_joint = list_full_segment.index(
-            joint.segment_proximal)
-        position_segment_distal_joint = list_full_segment.index(
-            joint.segment_distal)
-        list_link.append((position_segment_proximal_joint,
-                         position_segment_distal_joint))
+        position_segment_proximal_joint = list_full_segment.index(joint.segment_proximal)
+        position_segment_distal_joint = list_full_segment.index(joint.segment_distal)
+        list_link.append((position_segment_proximal_joint, position_segment_distal_joint))
         # Modify the information of the position of the distal and proximal segment in the joint
         # TODO this information could be given by the user ????
         joint.proximal_indice = position_segment_proximal_joint
@@ -120,8 +121,7 @@ def create_data_for_kinematics(list_full_segment, root, list_link):
     link_to_add = True
 
     test_tree = treelib.Tree()
-    test_tree.create_node(
-        list_full_segment[pos_of_root].segment_name, pos_of_root)
+    test_tree.create_node(list_full_segment[pos_of_root].segment_name, pos_of_root)
     node_to_analyse = [pos_of_root]
     while link_to_add:
         futur_node_to_analyse = list()
@@ -129,8 +129,7 @@ def create_data_for_kinematics(list_full_segment, root, list_link):
             for pos, value in enumerate(connexion[node, :]):
                 if value == 1:
                     futur_node_to_analyse.append(pos)
-                    test_tree.create_node(
-                        list_full_segment[pos].segment_name, pos, parent=node)
+                    test_tree.create_node(list_full_segment[pos].segment_name, pos, parent=node)
                     # we remove the link
                     connexion[pos, node] = 0
                     connexion[node, pos] = 0
@@ -144,20 +143,27 @@ def create_data_for_kinematics(list_full_segment, root, list_link):
     list_all_path_joint = list()
     for list_path in list_all_path:
         list_joint_temp = list()
-        for ind in range(len(list_path)-1):
-            if (list_path[ind], (list_path[ind+1])) in list_link:
-                list_joint_temp.append(list_link.index(
-                    (list_path[ind], (list_path[ind+1]))))
-            elif (list_path[ind+1], (list_path[ind])) in list_link:
-                list_joint_temp.append(list_link.index(
-                    (list_path[ind+1], (list_path[ind]))))
+        for ind in range(len(list_path) - 1):
+            if (list_path[ind], (list_path[ind + 1])) in list_link:
+                list_joint_temp.append(list_link.index((list_path[ind], (list_path[ind + 1]))))
+            elif (list_path[ind + 1], (list_path[ind])) in list_link:
+                list_joint_temp.append(list_link.index((list_path[ind + 1], (list_path[ind]))))
         list_all_path_joint.append(list_joint_temp)
 
     return list_all_path, list_all_path_joint
 
 
-def calculate_multiseg(list_full_joint, list_full_segment, list_all_path, list_all_path_joint,
-                       point_frq, cut_off_frequency, gravity_direction, unit_point, projection_moment):
+def calculate_multiseg(
+    list_full_joint,
+    list_full_segment,
+    list_all_path,
+    list_all_path_joint,
+    point_frq,
+    cut_off_frequency,
+    gravity_direction,
+    unit_point,
+    projection_moment,
+):
     # Creation of the information for the kinematics chain from the link
     list_all_segment = list()
     list_all_phi_ext = list()
@@ -186,8 +192,7 @@ def calculate_multiseg(list_full_joint, list_full_segment, list_all_path, list_a
             joint_to_consider = list_full_joint[position_joint]
             name_joint.append(joint_to_consider.name_joint)
             name_rotation.append(joint_to_consider.euler_sequences)
-            pos_moment_calculation.append(
-                joint_to_consider.point_of_moment_calculus)
+            pos_moment_calculation.append(joint_to_consider.point_of_moment_calculus)
             frame_moment_calculation.append(joint_to_consider.frame_moment)
 
         list_all_segment.append(segment)
@@ -206,10 +211,19 @@ def calculate_multiseg(list_full_joint, list_full_segment, list_all_path, list_a
         list_pos_moment_calculation = list_all_pos_moment_calculation[ind_chain]
         list_frame_moment_calculation = list_all_frame_moment_calculation[ind_chain]
 
-        multiseg = KinematicChain(list_segment, list_phi_ext,
-                                  list_name_joint, list_name_rotation,
-                                  list_pos_moment_calculation, list_frame_moment_calculation, point_frq, cut_off_frequency,
-                                  gravity_direction, unit_point, projection_moment)
+        multiseg = KinematicChain(
+            list_segment,
+            list_phi_ext,
+            list_name_joint,
+            list_name_rotation,
+            list_pos_moment_calculation,
+            list_frame_moment_calculation,
+            point_frq,
+            cut_off_frequency,
+            gravity_direction,
+            unit_point,
+            projection_moment,
+        )
         all_multiseg.append(multiseg)
 
     return all_multiseg

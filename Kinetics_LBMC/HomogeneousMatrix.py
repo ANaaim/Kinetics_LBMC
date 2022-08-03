@@ -102,7 +102,7 @@ class HomogeneousMatrix:
 
     def vel_acc_Mat(self, frq_point, fq_cutoff):
         """Calculate the H and W homogeneous matrix.
-        TODO : Explain what are those two beautiful matrix 
+        TODO : Explain what are those two beautiful matrix
 
         W = M'inv(M)
         H = M''inv(M)
@@ -119,14 +119,14 @@ class HomogeneousMatrix:
         :rtype: list of HomogeneousMatrix
 
         """
-        dt = 1/frq_point
+        dt = 1 / frq_point
         grad = np.gradient(self.T_homo, dt, axis=2)
         grad_2 = np.gradient(grad, dt, axis=2)
 
-        W = np.einsum('mnr,ndr->mdr', grad, self.inv().T_homo)
-        H = np.einsum('mnr,ndr->mdr', grad_2, self.inv().T_homo)
+        W = np.einsum("mnr,ndr->mdr", grad, self.inv().T_homo)
+        H = np.einsum("mnr,ndr->mdr", grad_2, self.inv().T_homo)
 
-        b, a = signal.butter(4, fq_cutoff/(0.5*frq_point), btype='lowpass')
+        b, a = signal.butter(4, fq_cutoff / (0.5 * frq_point), btype="lowpass")
         W[0:3, :, :] = signal.filtfilt(b, a, W[0:3, :, :], axis=2)
         H[0:3, :, :] = signal.filtfilt(b, a, H[0:3, :, :], axis=2)
 
@@ -142,7 +142,7 @@ class HomogeneousMatrix:
         # inverse of a Homogenous matrice is [R.T,-R.T*Or]
         R_T = self.T_homo[0:3, 0:3, :].transpose(1, 0, 2)
         Or_init = self.T_homo[0:3, 3, :]
-        Or_inv_2 = np.einsum('mnr,nr->mr', -R_T, Or_init)
+        Or_inv_2 = np.einsum("mnr,nr->mr", -R_T, Or_init)
         return HomogeneousMatrix.fromR_Or(R_T, Or_inv_2)
 
     def transpose(self):
@@ -156,10 +156,8 @@ class HomogeneousMatrix:
         return HomogeneousMatrix.fromHomo(transpose_homo)
 
     def __mul__(self, other):
-        """
-        
-        """
-        return HomogeneousMatrix.fromHomo(np.einsum('mnr,ndr->mdr', self.T_homo, other.T_homo))
+        """ """
+        return HomogeneousMatrix.fromHomo(np.einsum("mnr,ndr->mdr", self.T_homo, other.T_homo))
 
     def __add__(self, other):
         return HomogeneousMatrix.fromHomo(self.T_homo + other.T_homo)
