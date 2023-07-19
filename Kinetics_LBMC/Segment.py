@@ -280,6 +280,29 @@ def Q2T(self, Btype, origin_str):
 
 
 def Q2Buv(alpha, beta, gamma, length):
+    # SYNOPSIS
+    # T = Q2Tuv_array3(Q)
+    #
+    # INPUT
+    # Q (i.e., generalized coordinates)
+    #
+    # OUTPUT
+    # T (i.e., homogenous matrix)
+    #
+    # DESCRIPTION
+    # Computation, for all frames (i.e., in 3rd dimension, cf. data structure
+    # in user guide), of the homogenous matrix (T) from generalized coordinates
+    # (Q) with origin at endpoint P and axis correspondence X = u,
+    # Z = u x v / ||u x v||
+    #
+    # REFERENCE
+    # R Dumas, L Cheze. 3D inverse dynamics in non-orthonormal segment
+    # coordinate system. Medical & Biological Engineering & Computing 2007;
+    # 45(3):315-22
+    # R Dumas, T Robert, V Pomero, L Cheze. Joint and segment coordinate
+    # systems revisited. Computer Methods in Biomechanics and Biomedical
+    # Engineering. 2012;(15 Suppl 1):183-5
+
     nb_frame = alpha.shape[0]
 
     B = np.zeros((3, 3, nb_frame))
@@ -300,6 +323,28 @@ def Q2Buv(alpha, beta, gamma, length):
 
 
 def Q2Buw(alpha, beta, gamma, length):
+    # FUNCTION
+    # Q2Tuw_array3.m
+    # __________________________________________________________________________
+    #
+    # PURPOSE
+    # Computation of homogenous matrix from generalized coordinates
+    #
+    # SYNOPSIS
+    # T = Q2Tuw_array3(Q)
+    #
+    # INPUT
+    # Q (i.e., generalized coordinates)
+    #
+    # OUTPUT
+    # T (i.e., homogenous matrix)
+    #
+    # DESCRIPTION
+    # Computation, for all frames (i.e., in 3rd dimension, cf. data structure
+    # in user guide), of the homogenous matrix (T) from generalized coordinates
+    # (Q) with origin at endpoint P and axis correspondence X = u,
+    # Y = w x u / ||w x u||
+
     nb_frame = alpha.shape[0]
     B = np.zeros((3, 3, nb_frame))
     B[0, 0, :] = np.ones((1, 1, nb_frame))
@@ -316,6 +361,32 @@ def Q2Buw(alpha, beta, gamma, length):
 
 
 def Q2Bwu(alpha, beta, gamma, length):
+    # FUNCTION
+    # Q2Twu_array3.m
+    # __________________________________________________________________________
+    #
+    # PURPOSE
+    # Computation of homogenous matrix from generalized coordinates
+    #
+    # SYNOPSIS
+    # T = Q2Twu_array3(Q)
+    #
+    # INPUT
+    # Q (i.e., generalized coordinates)
+    #
+    # OUTPUT
+    # T (i.e., homogenous matrix)
+    #
+    # DESCRIPTION
+    # Computation, for all frames (i.e., in 3rd dimension, cf. data structure
+    # in user guide), of the homogenous matrix (T) from generalized coordinates
+    # (Q) with origin at endpoint D and axis correspondence Z = w,
+    # Y = w x u / ||w x u||
+    #
+    # REFERENCE
+    # R Dumas, T Robert, V Pomero, L Cheze. Joint and segment coordinate
+    # systems revisited. Computer Methods in Biomechanics and Biomedical
+    # Engineering. 2012;(15 Suppl 1):183-5
     nb_frame = alpha.shape[0]
 
     B = np.zeros((3, 3, nb_frame))

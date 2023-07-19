@@ -8,7 +8,6 @@ import numpy as np
 
 
 def multi_body_optimisation(full_segment, full_model, max_step=50):
-
     nb_frame = full_segment[0].u.shape[1]
     nb_segment = len(full_segment)
     nb_marker = 0
@@ -46,7 +45,7 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
     # found.
     error_evolution = 1
     former_error = 1000000000000000
-    while error_evolution > 10**-2 and step < max_step:
+    while error_evolution > 10**-3 and step < max_step:
         step = step + 1
         print(step)
         # initialisation
@@ -107,7 +106,11 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         phik = np.zeros((nb_constraint, 1, nb_frame))
         Kk = np.zeros((nb_constraint, nb_segment*12, nb_frame))
         dKlambdakdQ = np.zeros((12*nb_segment, 12*nb_segment, nb_frame))
-
+        #import pdb
+        # pdb.set_trace()
+        # We know that all phim that are NaN are supposed to be part where no point have been recorded.
+        # As a result
+        phim = np.nan_to_num(phim)
         constraint_quantity = 0
         for ind_constraint, constraint in enumerate(full_model):
             ind_prox = constraint.proximal_indice
@@ -162,8 +165,10 @@ def multi_body_optimisation(full_segment, full_model, max_step=50):
         dFdX = np.zeros((nb_segment*12+nb_constraint+6*nb_segment,
                          12*nb_segment+nb_constraint+6*nb_segment,
                          nb_frame))
-        temp_Km_W_phim = np.einsum(
-            'mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), W)
+        # C'est pas déjà calculer çà ??? ca à l'air....
+        # temp_Km_W_phim = np.einsum(
+        #    'mnr,ndr->mdr', np.transpose(Km, (1, 0, 2)), W)
+        temp_Km_W_phim = temp_KmT
         F[0:nb_segment*12, :, :] = np.einsum('mnr,ndr->mdr',
                                              temp_Km_W_phim,
                                              phim) + np.einsum('mnr,ndr->mdr',
@@ -353,3 +358,115 @@ def calculate_error(full_segment, full_model):
     print('Error phik')
     print(error_phik)
     return[phim, phik, phir]
+
+
+# TODO : function that from a list of segment and
+def multi_body_optimisation_scipy(full_Q, full_segment, full_model):
+
+    # Full_segment to vector Q
+    nb_segment = len(full_segment)
+    nb_frame = full_segment[0].rp.shape[1]
+    #full_Q = np.zeros(12*nb_segment*nb_frame)
+    # for ind_segment, segment in enumerate(full_segment):
+    #    base_point = ind_segment*12*nb_frame
+    #    full_Q[base_point:base_point+3 * nb_frame] = np.ravel(segment.u)
+    #    full_Q[base_point+3 * nb_frame:base_point+6 *
+    #           nb_frame] = np.reshape(segment.rp, (3*nb_frame,))
+    #    full_Q[base_point+6 * nb_frame:base_point+9 *
+    #           nb_frame] = np.reshape(segment.rd, (3*nb_frame,))
+    #    full_Q[base_point+9 * nb_frame:base_point+12 *
+    #           nb_frame] = np.reshape(segment.w, (3*nb_frame,))
+    new_full_segment = list()
+    for ind_segment, segment in enumerate(full_segment):
+        base_point = ind_segment*12*nb_frame
+        #u_temp = np.zeros((3, nb_frame))
+        u_temp = np.reshape(
+            full_Q[base_point:base_point+3 * nb_frame], (3, nb_frame))
+        #rp_temp = np.zeros((3, nb_frame))
+        rp_temp = np.reshape(
+            full_Q[base_point+3 * nb_frame:base_point+6 * nb_frame], (3, nb_frame))
+        #rd_temp = np.zeros((3, nb_frame))
+        rd_temp = np.reshape(
+            full_Q[base_point+6 * nb_frame:base_point+9 * nb_frame], (3, nb_frame))
+        #w_temp = np.zeros((3, nb_frame))
+        w_temp = np.reshape(
+            full_Q[base_point+9 * nb_frame:base_point+12 * nb_frame], (3, nb_frame))
+
+        segment.u = u_temp
+        segment.rp = rp_temp
+        segment.rd = rd_temp
+        segment.w = w_temp
+        segment.update()
+        new_full_segment.append(segment)
+    full_segment = new_full_segment
+    print(full_Q)
+    nb_frame = full_segment[0].u.shape[1]
+    nb_segment = len(full_segment)
+    nb_marker = 0
+    for segment in full_segment:
+        nb_marker = nb_marker + len(segment.rm)
+
+    nb_constraint = 0
+    for model in full_model:
+        nb_constraint += model.nb_constraint
+
+    # Construction des éléments constants
+    # Weight Matrix
+    W = np.zeros((3*nb_marker, 3*nb_marker, nb_frame))
+    ind_marker = 0
+    for ind_segment, segment in enumerate(full_segment):
+        W[ind_marker*3:(ind_marker+len(segment.rm))*3,
+          ind_marker*3:(ind_marker+len(segment.rm))*3, :] = \
+            segment.get_Weight_Matrix()
+        ind_marker = ind_marker + len(segment.rm)
+
+    # Value to be sure to enter the loop and large former error to be sure to be above any level that could be
+    # found.
+    # initialisation
+    ind_marker = 0
+    phim = np.zeros((3*nb_marker, 1, nb_frame))
+
+    phir = np.zeros((6*nb_segment, 1, nb_frame))
+    # Definition of the full phir,phim,Kr,Km matrix
+
+    for ind_segment, segment in enumerate(full_segment):
+        phir[6*ind_segment:6*(ind_segment+1), :] = segment.get_phir()
+
+        phim[ind_marker*3:(ind_marker+len(segment.rm))
+             * 3, :] = segment.get_phim()
+
+        ind_marker = ind_marker + len(segment.rm)
+    # Kinematic constraint
+    phik = np.zeros((nb_constraint, 1, nb_frame))
+
+    #import pdb
+    # pdb.set_trace()
+    # We know that all phim that are NaN are supposed to be part where no point have been recorded.
+    # As a result
+    phim = np.nan_to_num(phim)
+    constraint_quantity = 0
+    for ind_constraint, constraint in enumerate(full_model):
+        ind_prox = constraint.proximal_indice
+        ind_dist = constraint.distal_indice
+
+        phik_temp = constraint.get_phik(
+            full_segment[ind_dist], full_segment[ind_prox])
+
+        phik[constraint_quantity:constraint_quantity+constraint.nb_constraint,
+             :, :] = np.copy(phik_temp[:, np.newaxis, :])
+    # Error
+    error_phik = np.mean(np.einsum('mnr,ndr->mdr',
+                                   np.transpose(phik, (1, 0, 2)), phik))
+    temp_error_phim = np.einsum(
+        'mnr,ndr->mdr', np.transpose(phim, (1, 0, 2)), W)
+    error_phim = np.mean(np.einsum('mnr,ndr->mdr', temp_error_phim, phim))
+    error_phir = np.mean(np.einsum('mnr,ndr->mdr',
+                                   np.transpose(phir, (1, 0, 2)), phir))
+    print(error_phim+error_phik+error_phir)
+    return error_phim + error_phik + error_phir
+
+
+def sum_Q(Q, full, toto):
+    toto = Q*Q
+    print(toto.sum())
+    return toto.sum()

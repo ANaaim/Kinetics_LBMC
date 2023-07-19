@@ -65,38 +65,38 @@ def dumas(weight, length_segment, sexe, segment_name):
                                               [0, 0, 0],
                                               [0, 0,  0]])**2/10000
 
-    inertia['J']['F']['head'] = np.array([[30, -5,  -1],
-                                          [-5, 24,  -0],
-                                          [-1,  -0, 31]])**2/10000
-    inertia['J']['F']['thorax'] = np.array([[38, -12, -3],
-                                            [-12, 32,  -1],
-                                            [-3,  -1, 34]])**2/10000
-    inertia['J']['F']['abdomen'] = np.array([[65, -25, -3],
-                                             [-25, 78,  -5],
-                                             [-3,  -5, 52]])**2/10000
-    inertia['J']['F']['arm'] = np.array([[30, -3, -5],
-                                         [-3, 15,  -3],
-                                         [-5,  -3, 30]])**2/10000
-    inertia['J']['F']['forearm'] = np.array([[27, -10, -3],
-                                             [-10, 14,  -13],
-                                             [-3,  -13, 25]])**2/10000
-    inertia['J']['F']['hand'] = np.array([[64, -29, -23],
-                                          [-29, 43,  -28],
-                                          [-23,  -28, 59]])**2/10000
+    inertia['J']['F']['head'] = np.array([[30**2, -5**2,  1**2],
+                                          [-5**2, 24**2,  -0**2],
+                                          [1**2,  -0**2, 31**2]])/10000
+    inertia['J']['F']['thorax'] = np.array([[38**2, -12**2, -3**2],
+                                            [-12**2, 32**2,  1**2],
+                                            [-3**2,  1**2, 34**2]])/10000
+    inertia['J']['F']['abdomen'] = np.array([[65**2, 25**2, -3**2],
+                                             [25**2, 78**2,  -5**2],
+                                             [-3**2,  -5**2, 52**2]])/10000
+    inertia['J']['F']['arm'] = np.array([[30**2, -3**2, 5**2],
+                                         [-3**2, 15**2,  3**2],
+                                         [5**2,  3**23, 30**2]])/10000
+    inertia['J']['F']['forearm'] = np.array([[27**2, 10**2, 3**2],
+                                             [10**2, 14**2,  -13**2],
+                                             [3**2,  -13**2, 25**2]])/10000
+    inertia['J']['F']['hand'] = np.array([[64**2, 29**2, 23**2],
+                                          [29**2, 43**2,  -28**2],
+                                          [23**2,  -28**2, 59**2]])/10000
 
-    inertia['J']['F']['pelvis'] = np.array([[95, -35, -3],
-                                            [-35, 105, -2],
-                                            [-3, -2, 82]])**2/10000
-    # TODO What sign for the value out of the diagonal :
-    inertia['J']['F']['thigh'] = np.array([[31, -7,  2],
-                                           [-7, 19, -7],
-                                           [2,  -7, 32]])**2/10000
-    inertia['J']['F']['tibia'] = np.array([[28, 2, 1],
-                                           [2, 10, 6],
-                                           [1, 6, 28]])**2/10000
-    inertia['J']['F']['foot'] = np.array([[24, -15,  9],
-                                          [-15, 50, -5],
-                                          [9,   -5, 50]])**2/10000
+    inertia['J']['F']['pelvis'] = np.array([[95**2, -35**2, -3**2],
+                                            [-35**2, 105**2, -2**2],
+                                            [-3**2, -2**2, 82**2]])/10000
+
+    inertia['J']['F']['thigh'] = np.array([[31**2, -7**2,  2**2],
+                                           [-7**2, 19**2, -7**2],
+                                           [2**2,  -7**2, 32**2]])/10000
+    inertia['J']['F']['tibia'] = np.array([[28**2, 2**2, 1**2],
+                                           [2**2, 10**2, 6**2],
+                                           [1**2, 6**2, 28**2]])/10000
+    inertia['J']['F']['foot'] = np.array([[24**2, -15**2,  9**2],
+                                          [-15**2, 50**2, -5**2],
+                                          [9**2, -5**2, 50**2]])/10000
 
     inertia['mass_perc']['M']['platform'] = 0
     inertia['mass_perc']['M']['zero'] = 0
@@ -128,47 +128,47 @@ def dumas(weight, length_segment, sexe, segment_name):
 
     inertia['J']['M']['platform'] = np.array([[0, 0,  0],
                                               [0, 0, 0],
-                                              [0, 0,  0]])**2/10000
+                                              [0, 0,  0]])/10000
     inertia['J']['M']['zero'] = np.array([[0, 0,  0],
                                           [0, 0, 0],
-                                          [0, 0,  0]])**2/10000
+                                          [0, 0,  0]])/10000
 
-    inertia['J']['M']['head'] = np.array([[28, -7, -2],
-                                          [-7, 21,  -3],
-                                          [-2,  -3, 30]])**2/10000
-    inertia['J']['M']['thorax'] = np.array([[42, -11, -1],
-                                            [-11, 33,  -3],
-                                            [-1,  -3, 36]])**2/10000
-    inertia['J']['M']['abdomen'] = np.array([[54, -11, -6],
-                                             [-11, 66,  -5],
-                                             [-6,  -5, 40]])**2/10000
-    inertia['J']['M']['pelvis'] = np.array([[102, -25, -12],
-                                            [-25, 106,  -8],
-                                            [-12,  -8,  96]])**2/10000
-    inertia['J']['M']['arm'] = np.array([[29, -5, -3],
-                                         [-5, 13,  -13],
-                                         [-3,  -13, 30]])**2/10000
-    inertia['J']['M']['forearm'] = np.array([[28, -8, -1],
-                                             [-8, 11,  -2],
-                                             [-1,  -2, 28]])**2/10000
-    inertia['J']['M']['hand'] = np.array([[61, -22, -15],
-                                          [-22, 38,  -20],
-                                          [-15,  -20, 56]])**2/10000
+    inertia['J']['M']['head'] = np.array([[28**2, -7**2, -2**2],
+                                          [-7**2, 21**2,  3**2],
+                                          [-2**2,  3**2, 30**2]])/10000
+    inertia['J']['M']['thorax'] = np.array([[42**2, -11**2, 1**2],
+                                            [-11**2, 33**2,  3**2],
+                                            [1**2,  3**2, 36**2]])**2/10000
+    inertia['J']['M']['abdomen'] = np.array([[54**2, 11**2, -6**2],
+                                             [11**2, 66**2,  -5**2],
+                                             [-6**2,  -5**2, 40**2]])**2/10000
+    inertia['J']['M']['pelvis'] = np.array([[102**2, -25**2, -12**2],
+                                            [-25**2, 106**2,  -8**2],
+                                            [-12**2,  -8**2,  96**2]])/10000
+    inertia['J']['M']['arm'] = np.array([[29**2, 5**2, 3**2],
+                                         [5**2, 13**2,  -13**2],
+                                         [3**2,  -13**2, 30**2]])/10000
+    inertia['J']['M']['forearm'] = np.array([[28**2, 8**2, -1**2],
+                                             [8**2, 11**2,  2**2],
+                                             [-1**2,  2**2, 28**2]])**2/10000
+    inertia['J']['M']['hand'] = np.array([[61**2, 22**2, 15**2],
+                                          [22**2, 38**2,  -20**2],
+                                          [15**2,  -20**2, 56**2]])/10000
 
-    # TODO What sign for the value out of the diagonal
-    inertia['J']['M']['thigh'] = np.array([[29,  7, -2],
-                                           [7,  15, -7],
-                                           [-2, -7, 30]])**2/10000
-    inertia['J']['M']['tibia'] = np.array([[28, -4, -2],
-                                           [-4, 10,  4],
-                                           [-2,  4, 28]])**2/10000
-    inertia['J']['M']['foot'] = np.array([[22, 17, -11],
-                                          [17, 49,   0],
-                                          [-11, 0,  48]])**2/10000
+    inertia['J']['M']['thigh'] = np.array([[29**2, 7**2, -2**2],
+                                           [7**2,  15**2, -7**2],
+                                           [-2**2, -7**2, 30**2]])/10000
+
+    inertia['J']['M']['tibia'] = np.array([[28**2, -4**2, -2**2],
+                                           [-4**2, 10**2,  4**2],
+                                           [-2**2,  4**2, 28**2]])/10000
+    inertia['J']['M']['foot'] = np.array([[22**2, 17**2, -11**2],
+                                          [17**2, 49**2,   0**2],
+                                          [-11**2, 0**2,  48**2]])/10000
 
     ms = inertia['mass_perc'][sexe][segment_name.lower()]*weight/100
     rCs = length_segment * inertia['perc_length'][sexe][segment_name.lower()]
-    Is = ms*length_segment**2 * inertia['J'][sexe][segment_name.lower()]
+    Is = ms*length_segment**2 * inertia['J'][sexe][segment_name.lower()]  # *0
 
     # Homogenous matrix of pseudo-inertia expressed in SCS (Js)
     # The homogenous formulation is not the same for the diagonal
@@ -180,6 +180,7 @@ def dumas(weight, length_segment, sexe, segment_name):
     Js[3, 0: 3] = ms*rCs
     Js[0: 3, 3] = ms*rCs
     Js[3, 3] = ms
+
     return(ms, rCs, Is, Js)
 
 

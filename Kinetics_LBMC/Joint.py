@@ -27,7 +27,7 @@ class Joint:
 
         :param segment_dist: Generally the distal Segment of the joint.
         :type segment_dist: Segment
-        :param seg_phi_dist:Action homogenous matrix at the distal point of the Segment
+        :param seg_phi_dist:Action homogenous matrix at the distal point of the Segment ? expressed at the origin ? 
         :type seg_phi_dist: type
         :param frq_acq: point frequency
         :type frq_acq: double
@@ -60,18 +60,25 @@ class Joint:
         W_segment, H_segment = segment_dist.Tprox.vel_acc_Mat(frq_acq, frq_cp)
 
         acc_rel = H_segment-Hg
+        # acc_rel = HomogeneousMatrix.fromHomo(
+        #    np.zeros((4, 4, Hg.T_homo.shape[2])))-Hg
+
         self.phi_prox_origin = seg_phi_dist + acc_rel*J_temp-J_temp*acc_rel.transpose()
 
-    def get_force_moment(self, frame, base):
-        # frame is a homogeneous matrix in which the force shoud be expressed
+    def get_force_moment(self, frame):
+        # frame is a homogeneous matrix in where and which the force shoud be expressed
         # is the frame in which the force should be expressed
+
+        # phi_projected = frame.inv()*(self.phi_prox_origin*frame.inv().transpose())
         phi_projected = frame.inv()*(self.phi_prox_origin*frame.inv().transpose())
-
+        # phi_projected = self.phi_prox_origin
         F, M = extraction_force_moment_from_phi(phi_projected)
-
-        R = base.inv().T_homo[0:3, 0:3, :]
-        M = np.einsum('mnr,ndr->mdr', R, M)
-        F = np.einsum('mnr,ndr->mdr', R, F)
+        # import pdb
+        # pdb.set_trace()
+        # Everything should be IN frame not in a base
+        # R = base.inv().T_homo[0:3, 0:3, :]
+        # M = np.einsum('mnr,ndr->mdr', R, M)
+        # F = np.einsum('mnr,ndr->mdr', R, F)
 
         return F, M
 

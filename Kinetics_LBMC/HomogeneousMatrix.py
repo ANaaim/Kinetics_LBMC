@@ -120,8 +120,11 @@ class HomogeneousMatrix:
 
         """
         dt = 1/frq_point
+        b, a = signal.butter(4, fq_cutoff/(0.5*frq_point), btype='lowpass')
         grad = np.gradient(self.T_homo, dt, axis=2)
+        grad = signal.filtfilt(b, a, grad, axis=2)
         grad_2 = np.gradient(grad, dt, axis=2)
+        grad_2 = signal.filtfilt(b, a, grad_2, axis=2)
 
         W = np.einsum('mnr,ndr->mdr', grad, self.inv().T_homo)
         H = np.einsum('mnr,ndr->mdr', grad_2, self.inv().T_homo)
@@ -157,7 +160,7 @@ class HomogeneousMatrix:
 
     def __mul__(self, other):
         """
-        
+
         """
         return HomogeneousMatrix.fromHomo(np.einsum('mnr,ndr->mdr', self.T_homo, other.T_homo))
 

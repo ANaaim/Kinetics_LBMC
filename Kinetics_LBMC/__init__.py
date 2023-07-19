@@ -7,5 +7,5 @@ from .joint_model import hinge_model
 from .joint_model import constant_distance
 from .joint_model import no_model
 from .multi_body_optimisation import multi_body_optimisation
-
+from .Model import Model
 from .utils.points_treatment import points_treatment

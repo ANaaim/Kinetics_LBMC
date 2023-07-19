@@ -1,12 +1,12 @@
 import treelib
-from .multi_body_optimisation import multi_body_optimisation as multi_body_optimisation
+from .multi_body_optimisation import multi_body_optimisation as multi_body_optimisation, multi_body_optimisation_scipy, sum_Q
 from .KinematicChain import KinematicChain as KinematicChain
 import numpy as np
 import time
+from scipy import optimize
 
 
 class Model:
-
 
     def __init__(self, list_joint_mbo, list_joint_kinematics_only=None):
         """Initiation of the model based on two list. The joint that will be used in the multi body optimisation 
@@ -42,7 +42,7 @@ class Model:
 
         self.list_root = list_root
 
-    def mbo(self, max_iter=50,time_process= False):
+    def mbo(self, max_iter=50, time_process=False):
         """_summary_
 
         :param max_iter: number of iteration allowed during the newton-Raphson optimisation, defaults to 50
@@ -50,12 +50,55 @@ class Model:
         :param time_process: Define if the multibody optmisation should be time, defaults to False
         :type time_process: bool, optional
         """
-        
+
         list_full_segment, list_joint, list_link = create_segment_list_from_joint(
             self.list_joint_mbo)
         if time_process:
             start_time = time.time()
         multi_body_optimisation(list_full_segment, list_joint, max_iter)
+        if time_process:
+            final_time = time.time() - start_time
+            print("--- %s seconds ---" % (final_time))
+        # Nothing shoudl be returned as the data are modified in the multibody optimisation function
+        return
+
+    def mbo_scipy(self, max_iter=50, time_process=False):
+        """_summary_
+
+        :param max_iter: number of iteration allowed during the newton-Raphson optimisation, defaults to 50
+        :type max_iter: int, optional
+        :param time_process: Define if the multibody optmisation should be time, defaults to False
+        :type time_process: bool, optional
+        """
+
+        list_full_segment, list_joint, list_link = create_segment_list_from_joint(
+            self.list_joint_mbo)
+        nb_segment = len(list_full_segment)
+        nb_frame = list_full_segment[0].rp.shape[1]
+        full_Q0 = np.ones(12*nb_segment*nb_frame)
+        for ind_segment, segment in enumerate(list_full_segment):
+            base_point = ind_segment*12*nb_frame
+            full_Q0[base_point:base_point+3 * nb_frame] = np.ravel(segment.u)
+            full_Q0[base_point+3 * nb_frame:base_point+6 *
+                    nb_frame] = np.reshape(segment.rp, (3*nb_frame,))
+            full_Q0[base_point+6 * nb_frame:base_point+9 *
+                    nb_frame] = np.reshape(segment.rd, (3*nb_frame,))
+            full_Q0[base_point+9 * nb_frame:base_point+12 *
+                    nb_frame] = np.reshape(segment.w, (3*nb_frame,))
+        toto = dict()
+        toto['disp'] = True
+        toto['maxiter'] = 50
+        if time_process:
+            start_time = time.time()
+
+        import pdb
+        pdb.set_trace()
+        res = optimize.minimize(
+            multi_body_optimisation_scipy,
+            full_Q0, args=(list_full_segment, list_joint))
+        import pdb
+        pdb.set_trace()
+        #multi_body_optimisation_scipy(list_full_segment, list_joint, max_iter)
         if time_process:
             final_time = time.time() - start_time
             print("--- %s seconds ---" % (final_time))

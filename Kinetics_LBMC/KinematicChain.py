@@ -85,7 +85,7 @@ class KinematicChain:
             for ind_joint in range(len(name_joint)):
                 force[name_joint[ind_joint]], moment[name_joint[ind_joint]] = \
                     phi_joints[name_joint[ind_joint]].get_force_moment(
-                    pos_moment_calculation[ind_joint], frame_moment_calculation[ind_joint])
+                    frame_moment_calculation[ind_joint])
 
         self.euler_glob = euler_glob
         self.euler_rel = euler_rel

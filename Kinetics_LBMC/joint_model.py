@@ -84,6 +84,25 @@ class spherical_model:
     def get_dKlambdakdQ(self, nb_frame, lambda_k):
         return np.zeros((2*12, 2*12, nb_frame))
 
+    def change_segment(self, segment_distal, segment_proximal, point_of_moment_calculus=None, frame_moment=None):
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[:, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[:, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[:, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, self.segment_proximal.rp)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
 
 class universal_model:
 
@@ -247,6 +266,28 @@ class universal_model:
 
         return dKlambdakdQ
 
+    def change_segment(self, segment_distal, segment_proximal, point_of_moment_calculus=None, frame_moment=None):
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[
+                             :, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, self.segment_proximal.rp)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
 
 class hinge_model:
 
@@ -329,6 +370,28 @@ class hinge_model:
         dKlambdakdQ[21:24, 6:9, :] = -lambda_k[3, :]*diag_3
 
         return dKlambdakdQ
+
+    def change_segment(self, segment_distal, segment_proximal, point_of_moment_calculus=None, frame_moment=None):
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[
+                             :, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, self.segment_proximal.rp)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
 
 
 class constant_distance:
@@ -413,6 +476,28 @@ class constant_distance:
     def get_dKlambdakdQ(self, nb_frame, lambda_k):
         return np.zeros((2*12, 2*12, nb_frame))
 
+    def change_segment(self, segment_distal, segment_proximal, point_of_moment_calculus=None, frame_moment=None):
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[
+                             :, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, self.segment_proximal.rp)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
+
 
 class no_model:
 
@@ -455,3 +540,25 @@ class no_model:
 
     def get_dKlambdakdQ(self, nb_frame, lambda_k):
         return np.zeros((2*12, 2*12, nb_frame))
+
+    def change_segment(self, segment_distal, segment_proximal, point_of_moment_calculus=None, frame_moment=None):
+        self.segment_distal = segment_distal
+        self.segment_proximal = segment_proximal
+        # Point where the forces and moment are calculated
+        if point_of_moment_calculus is None:
+            nb_frame = segment_distal.u.shape[1]
+            X_glob = np.tile(np.array([1, 0, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Y_glob = np.tile(np.array([0, 1, 0])[
+                             :, np.newaxis], (1, nb_frame))
+            Z_glob = np.tile(np.array([0, 0, 1])[
+                             :, np.newaxis], (1, nb_frame))
+            self.point_of_moment_calculus = HomogeneousMatrix(
+                X_glob, Y_glob, Z_glob, self.segment_proximal.rp)
+        else:
+            self.point_of_moment_calculus = point_of_moment_calculus
+
+        if frame_moment is None:
+            self.frame_moment = segment_proximal.Tdist
+        else:
+            self.frame_moment = frame_moment
